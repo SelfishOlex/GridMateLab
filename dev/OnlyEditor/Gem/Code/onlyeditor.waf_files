@@ -1,0 +1,18 @@
+{
+    "none": {
+        "Source": [
+            "Source/StdAfx.cpp",
+            "Source/StdAfx.h"
+        ]
+    },
+    "auto": {
+        "Include": [
+            "Include/OnlyEditor/OnlyEditorBus.h"
+        ],
+        "Source": [
+            "Source/OnlyEditorModule.cpp",
+            "Source/OnlyEditorSystemComponent.cpp",
+            "Source/OnlyEditorSystemComponent.h"
+        ]
+    }
+}

@@ -122,3 +122,4 @@ dev/_WAF_/environment.json
 dev/SetupAssistantUserPreferences.ini
 SetupAssistant.bat
 dev/UserSettings.xml
+dev/OnlyEditor/Levels/tutorial/_savebackup/

@@ -1,0 +1,9 @@
+{
+    "description": "Configuration for OnlyEditor",
+    "visual_studio_name": "OnlyEditor",
+    "comment" : "",
+    "game_projects" : "OnlyEditor",
+
+    "modules" : [
+    ]
+}
