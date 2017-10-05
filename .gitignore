@@ -121,3 +121,4 @@ dev/AssetProcessorTemp/
 dev/_WAF_/environment.json
 dev/SetupAssistantUserPreferences.ini
 SetupAssistant.bat
+dev/UserSettings.xml
