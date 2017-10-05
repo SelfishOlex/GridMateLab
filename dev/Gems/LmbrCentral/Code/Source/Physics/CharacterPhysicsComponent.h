@@ -255,19 +255,19 @@ namespace LmbrCentral
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("PhysicsService"));
-            provided.push_back(AZ_CRC("CharacterPhysicsService"));
+            provided.push_back(AZ_CRC("PhysicsService", 0xa7350d22));
+            provided.push_back(AZ_CRC("CharacterPhysicsService", 0x3cd4f075));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("PhysicsService"));
-            incompatible.push_back(AZ_CRC("CharacterPhysicsService"));
+            incompatible.push_back(AZ_CRC("PhysicsService", 0xa7350d22));
+            incompatible.push_back(AZ_CRC("CharacterPhysicsService", 0x3cd4f075));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService"));
+            required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
         }
 
     private:

@@ -52,22 +52,22 @@ namespace LmbrCentral
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("RagdollService"));
+            provided.push_back(AZ_CRC("RagdollService", 0xd416b0dc));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("RagdollService"));
+            incompatible.push_back(AZ_CRC("RagdollService", 0xd416b0dc));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("SkinnedMeshService"));
+            required.push_back(AZ_CRC("SkinnedMeshService", 0xac7cea96));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("PhysicsService"));
+            dependent.push_back(AZ_CRC("PhysicsService", 0xa7350d22));
         }
 
 

@@ -111,3 +111,13 @@
 /dev/Gems/OpenVR
 /dev/Gems/PBSreferenceMaterials
 /dev/Gems/Substance
+dev/Code/SDKs/
+dev/Solutions/
+dev/Code/Tools/SDKs/
+dev/Code/Sandbox/SDKs/
+dev/Cache/
+dev/BinTemp/
+dev/AssetProcessorTemp/
+dev/_WAF_/environment.json
+dev/SetupAssistantUserPreferences.ini
+SetupAssistant.bat
