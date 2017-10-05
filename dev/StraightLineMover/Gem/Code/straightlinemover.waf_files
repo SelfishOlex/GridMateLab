@@ -1,0 +1,18 @@
+{
+    "none": {
+        "Source": [
+            "Source/StdAfx.cpp",
+            "Source/StdAfx.h"
+        ]
+    },
+    "auto": {
+        "Include": [
+            "Include/StraightLineMover/StraightLineMoverBus.h"
+        ],
+        "Source": [
+            "Source/StraightLineMoverModule.cpp",
+            "Source/StraightLineMoverSystemComponent.cpp",
+            "Source/StraightLineMoverSystemComponent.h"
+        ]
+    }
+}

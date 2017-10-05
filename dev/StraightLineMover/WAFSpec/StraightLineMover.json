@@ -1,0 +1,9 @@
+{
+    "description": "Configuration for StraightLineMover",
+    "visual_studio_name": "StraightLineMover",
+    "comment" : "",
+    "game_projects" : "StraightLineMover",
+
+    "modules" : [
+    ]
+}
