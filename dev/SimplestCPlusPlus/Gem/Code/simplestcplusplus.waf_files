@@ -1,0 +1,22 @@
+{
+    "none": {
+        "Source": [
+            "Source/StdAfx.cpp",
+            "Source/StdAfx.h"
+        ]
+    },
+    "auto": {
+        "Include": [
+            "Include/SimplestCPlusPlus/SimplestCPlusPlusBus.h"
+        ],
+        "Source": [
+            "Source/SimplestCPlusPlusModule.cpp",
+            "Source/SimplestCPlusPlusSystemComponent.cpp",
+            "Source/SimplestCPlusPlusSystemComponent.h"
+        ],
+        "Source/Components": [
+            "Source/Components/StraightLineMoverComponent.cpp",
+            "Source/Components/StraightLineMoverComponent.h"
+        ]
+    }
+}

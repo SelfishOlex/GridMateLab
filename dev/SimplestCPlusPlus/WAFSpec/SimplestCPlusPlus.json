@@ -1,0 +1,9 @@
+{
+    "description": "Configuration for SimplestCPlusPlus",
+    "visual_studio_name": "SimplestCPlusPlus",
+    "comment" : "",
+    "game_projects" : "SimplestCPlusPlus",
+
+    "modules" : [
+    ]
+}
