@@ -8,6 +8,7 @@
 
 #include <IGem.h>
 #include <Components/StraightLineMoverComponent.h>
+#include <Components/NetSyncComponent.h>
 
 namespace SimplestCPlusPlus
 {
@@ -25,6 +26,7 @@ namespace SimplestCPlusPlus
             m_descriptors.insert(m_descriptors.end(), {
                 SimplestCPlusPlusSystemComponent::CreateDescriptor(),
                 StraightLineMoverComponent::CreateDescriptor(),
+                NetSyncComponent::CreateDescriptor(),
             });
         }
 

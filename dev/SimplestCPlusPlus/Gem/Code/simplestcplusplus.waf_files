@@ -15,6 +15,8 @@
             "Source/SimplestCPlusPlusSystemComponent.h"
         ],
         "Source/Components": [
+            "Source/Components/NetSyncComponent.cpp",
+            "Source/Components/NetSyncComponent.h",
             "Source/Components/StraightLineMoverComponent.cpp",
             "Source/Components/StraightLineMoverComponent.h"
         ]

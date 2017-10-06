@@ -125,3 +125,5 @@ dev/UserSettings.xml
 dev/OnlyEditor/Levels/tutorial/_savebackup/
 dev/StraightLineMover/Levels/tutorial/_savebackup/
 dev/SimplestCPlusPlus/Levels/tutorial/_savebackup/
+dev/SessionStatus/editor_statuses.json
+dev/Editor/editoreventlog.xml
