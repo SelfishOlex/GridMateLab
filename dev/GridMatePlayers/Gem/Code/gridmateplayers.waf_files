@@ -7,6 +7,8 @@
     },
     "auto": {
         "Include": [
+            "Include/GridMatePlayers/ServerPlayerBodyBus.h",
+            "Include/GridMatePlayers/LocalClientBus.h",
             "Include/GridMatePlayers/GridMatePlayersBus.h",
             "Include/GridMatePlayers/PlayerActionsBus.h",
             "Include/GridMatePlayers/PlayerControlsBus.h"
@@ -17,12 +19,16 @@
             "Source/GridMatePlayersSystemComponent.h"
         ],
         "Source/Components": [
+            "Source/Components/LocalClientComponent.cpp",
+            "Source/Components/LocalClientComponent.h",
+            "Source/Components/ServerPlayerSpawner.cpp",
+            "Source/Components/ServerPlayerSpawner.h",
+            "Source/Components/ServerAuthPlayerComponent.cpp",
+            "Source/Components/ServerAuthPlayerComponent.h",
             "Source/Components/PebbleSpawnerComponent.cpp",
             "Source/Components/PebbleSpawnerComponent.h",
             "Source/Components/InputCaptureComponent.cpp",
             "Source/Components/InputCaptureComponent.h",
-            "Source/Components/PlayerControlsComponent.cpp",
-            "Source/Components/PlayerControlsComponent.h",
             "Source/Components/TimedProjectileComponent.cpp",
             "Source/Components/TimedProjectileComponent.h"
         ]

@@ -33,5 +33,7 @@ namespace GridMatePlayers
     private:
         bool m_isForwardPressed = false;
         bool m_isFiring = false;
+
+        AZ::EntityId GetParent();
     };
 }

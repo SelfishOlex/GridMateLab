@@ -7,10 +7,12 @@
 #include "GridMatePlayersSystemComponent.h"
 
 #include <IGem.h>
-#include "Components/PlayerControlsComponent.h"
 #include "Components/InputCaptureComponent.h"
 #include "Components/TimedProjectileComponent.h"
 #include "Components/PebbleSpawnerComponent.h"
+#include "Components/LocalClientComponent.h"
+#include "Components/ServerAuthPlayerComponent.h"
+#include "Components/ServerPlayerSpawner.h"
 
 namespace GridMatePlayers
 {
@@ -28,9 +30,11 @@ namespace GridMatePlayers
             m_descriptors.insert(m_descriptors.end(), {
                 GridMatePlayersSystemComponent::CreateDescriptor(),
                 InputCaptureComponent::CreateDescriptor(),
-                PlayerControlsComponent::CreateDescriptor(),
                 TimedProjectileComponent::CreateDescriptor(),
                 PebbleSpawnerComponent::CreateDescriptor(),
+                ServerPlayerSpawner::CreateDescriptor(),
+                ServerAuthPlayerComponent::CreateDescriptor(),
+                LocalClientComponent::CreateDescriptor(),
             });
         }
 

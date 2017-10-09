@@ -3,6 +3,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <GridMatePlayers/PlayerControlsBus.h>
+#include "AzCore/Component/TransformBus.h"
 
 using namespace AZ;
 using namespace AzFramework;
@@ -81,12 +82,12 @@ void InputCaptureComponent::CheckAndUpdateForward(
 
     if (pressed)
         EBUS_EVENT_ID(
-            GetEntityId(),
+            GetParent(),
             GridMatePlayers::PlayerControlsBus,
             ForwardKeyDown);
     else
         EBUS_EVENT_ID(
-            GetEntityId(),
+            GetParent(),
             GridMatePlayers::PlayerControlsBus,
             ForwardKeyUp);
 
@@ -99,9 +100,17 @@ void InputCaptureComponent::CheckAndUpdateFire(bool pressed)
 
     if (!pressed)
         EBUS_EVENT_ID(
-            GetEntityId(),
+            GetParent(),
             GridMatePlayers::PlayerControlsBus,
             FireKeyUp);
 
     m_isFiring = pressed;
+}
+
+AZ::EntityId InputCaptureComponent::GetParent()
+{
+    AZ::EntityId parent;
+    EBUS_EVENT_ID_RESULT(parent, GetEntityId(),
+        AZ::TransformBus, GetParentId);
+    return parent;
 }
