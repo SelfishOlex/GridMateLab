@@ -63,6 +63,14 @@ bool InputCaptureComponent::OnKeyboardEvent(
         return true; // key consumed
     }
 
+    if (inputType == InputDeviceKeyboard::Key::EditSpace)
+    {
+        const auto pressed = !!inputChannel.GetValue();
+        CheckAndUpdateFire(pressed);
+
+        return true; // key consumed
+    }
+
     return false; // key not consumed
 }
 
@@ -83,4 +91,17 @@ void InputCaptureComponent::CheckAndUpdateForward(
             ForwardKeyUp);
 
     m_isForwardPressed = pressed;
+}
+
+void InputCaptureComponent::CheckAndUpdateFire(bool pressed)
+{
+    if (m_isFiring == pressed) return;
+
+    if (!pressed)
+        EBUS_EVENT_ID(
+            GetEntityId(),
+            GridMatePlayers::PlayerControlsBus,
+            FireKeyUp);
+
+    m_isFiring = pressed;
 }

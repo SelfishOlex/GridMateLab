@@ -28,8 +28,10 @@ namespace GridMatePlayers
             const AzFramework::InputChannel& inputChannel);
 
         void CheckAndUpdateForward(bool pressed);
+        void CheckAndUpdateFire(bool pressed);
 
     private:
         bool m_isForwardPressed = false;
+        bool m_isFiring = false;
     };
 }

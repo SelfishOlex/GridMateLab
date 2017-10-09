@@ -2,6 +2,7 @@
 #include "PlayerControlsComponent.h"
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/TransformBus.h>
+#include <GridMatePlayers/PlayerActionsBus.h>
 
 using namespace AZ;
 using namespace GridMatePlayers;
@@ -48,6 +49,17 @@ void PlayerControlsComponent::ForwardKeyUp()
 void PlayerControlsComponent::ForwardKeyDown()
 {
     m_movingForward = true;
+}
+
+void PlayerControlsComponent::FireKeyUp()
+{
+    Vector3 position;
+    EBUS_EVENT_ID_RESULT(position, GetEntityId(),
+        AZ::TransformBus, GetWorldTranslation);
+
+    position += Vector3::CreateAxisY(1.f);
+
+    EBUS_EVENT(PlayerActionsBus, PlayerFired, position);
 }
 
 void PlayerControlsComponent::OnTick(

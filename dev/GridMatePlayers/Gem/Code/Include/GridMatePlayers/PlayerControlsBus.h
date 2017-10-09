@@ -21,6 +21,7 @@ namespace GridMatePlayers
         // Put your public methods here
         virtual void ForwardKeyUp() = 0;
         virtual void ForwardKeyDown() = 0;
+        virtual void FireKeyUp() = 0;
     };
 
     using PlayerControlsBus = AZ::EBus<PlayerControlsInterface>;

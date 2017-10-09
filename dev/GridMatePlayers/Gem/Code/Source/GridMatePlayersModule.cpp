@@ -10,6 +10,7 @@
 #include "Components/PlayerControlsComponent.h"
 #include "Components/InputCaptureComponent.h"
 #include "Components/TimedProjectileComponent.h"
+#include "Components/PebbleSpawnerComponent.h"
 
 namespace GridMatePlayers
 {
@@ -29,6 +30,7 @@ namespace GridMatePlayers
                 InputCaptureComponent::CreateDescriptor(),
                 PlayerControlsComponent::CreateDescriptor(),
                 TimedProjectileComponent::CreateDescriptor(),
+                PebbleSpawnerComponent::CreateDescriptor(),
             });
         }
 

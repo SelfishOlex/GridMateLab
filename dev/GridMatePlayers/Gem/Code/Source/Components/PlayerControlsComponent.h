@@ -24,6 +24,7 @@ namespace GridMatePlayers
         // GridMatePlayers::PlayerControlsBus
         void ForwardKeyUp() override;
         void ForwardKeyDown() override;
+        void FireKeyUp() override;
 
         // AZ::TickBus interface implementation
         void OnTick(float deltaTime,
