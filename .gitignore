@@ -95,6 +95,7 @@
 !**/README
 !**/TODO
 !**/waf
+!**/*.ico
 
 # Make an exception to ignore specific directories
 # Most of these directories are brought in by executing git_bootstrap.
@@ -125,3 +126,7 @@ dev/UserSettings.xml
 dev/OnlyEditor/Levels/tutorial/_savebackup/
 dev/StraightLineMover/Levels/tutorial/_savebackup/
 dev/SimplestCPlusPlus/Levels/tutorial/_savebackup/
+dev/Bin64vc140.Dedicated/
+dev/Tools/CrySCompileServer/x64/
+dev/Tools/Python/2.7.12/
+dev/SimplestCPlusPlus/.vscode/
