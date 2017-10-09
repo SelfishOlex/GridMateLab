@@ -1,0 +1,25 @@
+{
+    "none": {
+        "Source": [
+            "Source/StdAfx.cpp",
+            "Source/StdAfx.h"
+        ]
+    },
+    "auto": {
+        "Include": [
+            "Include/GridMatePlayers/GridMatePlayersBus.h",
+            "Include/GridMatePlayers/PlayerMovementBus.h"
+        ],
+        "Source": [
+            "Source/GridMatePlayersModule.cpp",
+            "Source/GridMatePlayersSystemComponent.cpp",
+            "Source/GridMatePlayersSystemComponent.h"
+        ],
+        "Source/Components": [
+            "Source/Components/InputCaptureComponent.cpp",
+            "Source/Components/InputCaptureComponent.h",
+            "Source/Components/PlayerControlsComponent.cpp",
+            "Source/Components/PlayerControlsComponent.h"
+        ]
+    }
+}

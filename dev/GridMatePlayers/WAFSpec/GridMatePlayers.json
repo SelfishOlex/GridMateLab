@@ -1,0 +1,9 @@
+{
+    "description": "Configuration for GridMatePlayers",
+    "visual_studio_name": "GridMatePlayers",
+    "comment" : "",
+    "game_projects" : "GridMatePlayers",
+
+    "modules" : [
+    ]
+}
