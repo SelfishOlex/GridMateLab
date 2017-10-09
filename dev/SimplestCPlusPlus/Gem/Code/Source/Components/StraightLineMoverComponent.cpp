@@ -10,14 +10,14 @@ using namespace SimplestCPlusPlus;
 
 void StraightLineMoverComponent::Reflect(ReflectContext* context)
 {
-    if (auto serialize = azrtti_cast<SerializeContext*>(context))
+    if (auto sc = azrtti_cast<SerializeContext*>(context))
     {
-        serialize->Class<StraightLineMoverComponent, Component>()
+        sc->Class<StraightLineMoverComponent, Component>()
                  ->Version(1)
                  ->Field("Speed",
                          &StraightLineMoverComponent::m_speed);
 
-        if (auto ec = serialize->GetEditContext())
+        if (auto ec = sc->GetEditContext())
         {
             ec->Class<StraightLineMoverComponent>(
                   "Straight Line Mover",
@@ -55,8 +55,8 @@ void StraightLineMoverComponent::OnTick(
     if (!m_isAuthoritative) return;
 
     float currentX;
-    EBUS_EVENT_ID_RESULT(currentX,
-        GetEntityId(), TransformBus, GetWorldX);
+    EBUS_EVENT_ID_RESULT(currentX, GetEntityId(),
+        TransformBus, GetWorldX);
 
     auto newX = currentX + deltaTime * m_speed;
     EBUS_EVENT_ID(GetEntityId(), TransformBus,

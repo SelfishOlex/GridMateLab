@@ -82,16 +82,16 @@ namespace AzToolsFramework
         processData.startupInfo.dwFlags |= STARTF_USESHOWWINDOW;
         processData.startupInfo.wShowWindow = processLaunchInfo.m_showWindow ? SW_SHOW : SW_HIDE;
 
-        DWORD createFlags = 0;
-        switch (processLaunchInfo.m_processPriority)
+        DWORD createFlags = PROCESSPRIORITY_NORMAL; // 0;
+        /*switch (processLaunchInfo.m_processPriority)
         {
         case PROCESSPRIORITY_BELOWNORMAL:
-            createFlags |= BELOW_NORMAL_PRIORITY_CLASS;
+            createFlags |= PROCESSPRIORITY_NORMAL; BELOW_NORMAL_PRIORITY_CLASS;
             break;
         case PROCESSPRIORITY_IDLE:
             createFlags |= IDLE_PRIORITY_CLASS;
             break;
-        }
+        }*/
 
         // Create the child process.
         result = CreateProcessW(processExecutableString.size() ? processExecutableString.c_str() : NULL,
@@ -239,4 +239,4 @@ namespace AzToolsFramework
     }
 } // namespace AzToolsFramework
 
-#endif // AZ_PLATFORM_WINDOWS 
+#endif // AZ_PLATFORM_WINDOWS

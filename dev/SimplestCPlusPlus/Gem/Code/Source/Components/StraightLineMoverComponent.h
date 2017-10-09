@@ -15,7 +15,6 @@ namespace SimplestCPlusPlus
         static void Reflect(AZ::ReflectContext* context);
 
         // AZ::Component interface implementation
-        void Init() override {}
         void Activate() override;
         void Deactivate() override;
 
