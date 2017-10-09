@@ -127,3 +127,6 @@ dev/StraightLineMover/Levels/tutorial/_savebackup/
 dev/SimplestCPlusPlus/Levels/tutorial/_savebackup/
 dev/SessionStatus/editor_statuses.json
 dev/Editor/editoreventlog.xml
+dev/Bin64vc140.Dedicated/
+dev/SimplestCPlusPlus/.vscode/
+dev/Tools/CrySCompileServer/x64/
