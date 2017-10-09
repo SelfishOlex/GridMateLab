@@ -59,7 +59,6 @@ void LocalClientComponent::Deactivate()
     if (!gEnv->IsDedicated())
     {
         LocalClientBus::Handler::BusDisconnect();
-
         if (SessionEventBus::Handler::BusIsConnected())
         {
             SessionEventBus::Handler::BusDisconnect();

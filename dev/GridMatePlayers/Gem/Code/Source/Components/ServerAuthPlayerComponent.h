@@ -11,7 +11,6 @@ namespace GridMatePlayers
     class ServerAuthPlayerComponent
         : public AZ::Component
           , public PlayerControlsBus::Handler
-          , public AZ::TickBus::Handler
           , public AzFramework::NetBindable
           , public ServerPlayerBodyBus::Handler
     {
@@ -33,22 +32,13 @@ namespace GridMatePlayers
         void Deactivate() override;
 
         // PlayerControlsBus interface
-        void ForwardKeyUp() override;
-        void ForwardKeyDown() override;
-        void FireKeyUp() override;
-
-        // AZ::TickBus interface implementation
-        void OnTick(float deltaTime,
-                    AZ::ScriptTimePoint time) override;
+        void ForwardKeyUp() override {}
+        void ForwardKeyDown() override {}
+        void FireKeyUp() override {}
 
         // ServerPlayerBodyBus interface
         void SetAssociatedPlayerId(
             const GridMate::MemberIDCompact& player) override;
-
-        // RPC callbacks
-        bool OnStartForward(const GridMate::RpcContext& rc);
-        bool OnStopForward(const GridMate::RpcContext& rc);
-        bool OnFireCommand(const GridMate::RpcContext& rc);
 
         // DataSet callback
         void OnOwningPlayerChanged(
