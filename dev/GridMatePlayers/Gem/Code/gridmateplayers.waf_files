@@ -8,7 +8,7 @@
     "auto": {
         "Include": [
             "Include/GridMatePlayers/GridMatePlayersBus.h",
-            "Include/GridMatePlayers/PlayerMovementBus.h"
+            "Include/GridMatePlayers/PlayerControlsBus.h"
         ],
         "Source": [
             "Source/GridMatePlayersModule.cpp",
@@ -19,7 +19,9 @@
             "Source/Components/InputCaptureComponent.cpp",
             "Source/Components/InputCaptureComponent.h",
             "Source/Components/PlayerControlsComponent.cpp",
-            "Source/Components/PlayerControlsComponent.h"
+            "Source/Components/PlayerControlsComponent.h",
+            "Source/Components/TimedProjectileComponent.cpp",
+            "Source/Components/TimedProjectileComponent.h"
         ]
     }
 }

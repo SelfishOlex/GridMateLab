@@ -9,6 +9,7 @@
 #include <IGem.h>
 #include "Components/PlayerControlsComponent.h"
 #include "Components/InputCaptureComponent.h"
+#include "Components/TimedProjectileComponent.h"
 
 namespace GridMatePlayers
 {
@@ -27,6 +28,7 @@ namespace GridMatePlayers
                 GridMatePlayersSystemComponent::CreateDescriptor(),
                 InputCaptureComponent::CreateDescriptor(),
                 PlayerControlsComponent::CreateDescriptor(),
+                TimedProjectileComponent::CreateDescriptor(),
             });
         }
 

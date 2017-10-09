@@ -2,7 +2,7 @@
 #include "InputCaptureComponent.h"
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
-#include <GridMatePlayers/PlayerMovementBus.h>
+#include <GridMatePlayers/PlayerControlsBus.h>
 
 using namespace AZ;
 using namespace AzFramework;
@@ -74,12 +74,12 @@ void InputCaptureComponent::CheckAndUpdateForward(
     if (pressed)
         EBUS_EVENT_ID(
             GetEntityId(),
-            GridMatePlayers::PlayerMovementBus,
+            GridMatePlayers::PlayerControlsBus,
             ForwardKeyDown);
     else
         EBUS_EVENT_ID(
             GetEntityId(),
-            GridMatePlayers::PlayerMovementBus,
+            GridMatePlayers::PlayerControlsBus,
             ForwardKeyUp);
 
     m_isForwardPressed = pressed;

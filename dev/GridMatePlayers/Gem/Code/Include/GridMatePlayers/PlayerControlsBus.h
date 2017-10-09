@@ -3,11 +3,11 @@
 
 namespace GridMatePlayers
 {
-    class PlayerMovementInterface
+    class PlayerControlsInterface
         : public AZ::EBusTraits
     {
     public:
-        virtual ~PlayerMovementInterface() = default;
+        virtual ~PlayerControlsInterface() = default;
 
         ///////////////////////////////////////////////////
         // EBusTraits overrides
@@ -23,5 +23,5 @@ namespace GridMatePlayers
         virtual void ForwardKeyDown() = 0;
     };
 
-    using PlayerMovementBus = AZ::EBus<PlayerMovementInterface>;
+    using PlayerControlsBus = AZ::EBus<PlayerControlsInterface>;
 } // namespace GridMatePlayers

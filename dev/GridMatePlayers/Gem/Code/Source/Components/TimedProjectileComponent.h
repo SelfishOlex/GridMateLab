@@ -1,18 +1,17 @@
 #pragma once
+
 #include <AzCore/Component/Component.h>
-#include <GridMatePlayers/PlayerControlsBus.h>
 #include <AzCore/Component/TickBus.h>
 
 namespace GridMatePlayers
 {
-    class PlayerControlsComponent
+    class TimedProjectileComponent
         : public AZ::Component
-        , public PlayerControlsBus::Handler
         , public AZ::TickBus::Handler
     {
     public:
-        AZ_COMPONENT(PlayerControlsComponent,
-            "{2F2D22D1-2214-4A77-B36D-B14D1DB0A75F}");
+        AZ_COMPONENT(TimedProjectileComponent,
+            "{30E90E50-DD3A-4F4C-AC4C-35553740EA40}");
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -21,16 +20,13 @@ namespace GridMatePlayers
         void Activate() override;
         void Deactivate() override;
 
-        // GridMatePlayers::PlayerControlsBus
-        void ForwardKeyUp() override;
-        void ForwardKeyDown() override;
-
         // AZ::TickBus interface implementation
         void OnTick(float deltaTime,
-            AZ::ScriptTimePoint time) override;
+                    AZ::ScriptTimePoint time) override;
 
     private:
-        bool m_movingForward = false;
-        float m_movingSpeedPerSecond = 1.f;
+        float m_lifetime = 0.f;
+        float m_maxLifetime = 3.f;
+        float m_impulse = 1000.f; // over one second
     };
 }

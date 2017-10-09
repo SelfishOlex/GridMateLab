@@ -30,13 +30,13 @@ void PlayerControlsComponent::Reflect(ReflectContext* context)
 
 void PlayerControlsComponent::Activate()
 {
-    PlayerMovementBus::Handler::BusConnect(GetEntityId());
+    PlayerControlsBus::Handler::BusConnect(GetEntityId());
     TickBus::Handler::BusConnect();
 }
 
 void PlayerControlsComponent::Deactivate()
 {
-    PlayerMovementBus::Handler::BusDisconnect();
+    PlayerControlsBus::Handler::BusDisconnect();
     TickBus::Handler::BusDisconnect();
 }
 
