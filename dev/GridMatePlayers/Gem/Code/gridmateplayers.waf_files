@@ -23,6 +23,8 @@
             "Source/Components/LocalClientComponent.h",
             "Source/Components/ServerPlayerSpawner.cpp",
             "Source/Components/ServerPlayerSpawner.h",
+            "Source/Components/ServerPlayerControlsComponent.cpp",
+            "Source/Components/ServerPlayerControlsComponent.h",
             "Source/Components/ServerAuthPlayerComponent.cpp",
             "Source/Components/ServerAuthPlayerComponent.h",
             "Source/Components/PebbleSpawnerComponent.cpp",

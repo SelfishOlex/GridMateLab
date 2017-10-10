@@ -1,7 +1,5 @@
 #pragma once
 #include <AzCore/Component/Component.h>
-#include <GridMatePlayers/PlayerControlsBus.h>
-#include <AzCore/Component/TickBus.h>
 #include <GridMate/Replica/ReplicaCommon.h>
 #include <AzFramework/Network/NetBindable.h>
 #include <GridMatePlayers/ServerPlayerBodyBus.h>
@@ -10,8 +8,6 @@ namespace GridMatePlayers
 {
     class ServerAuthPlayerComponent
         : public AZ::Component
-          , public PlayerControlsBus::Handler
-          , public AZ::TickBus::Handler
           , public AzFramework::NetBindable
           , public ServerPlayerBodyBus::Handler
     {
@@ -32,20 +28,6 @@ namespace GridMatePlayers
         void Activate() override;
         void Deactivate() override;
 
-        // PlayerControlsBus interface
-        void ForwardKeyUp() override;
-        void ForwardKeyDown() override;
-        void FireKeyUp() override;
-
-        // AZ::TickBus interface implementation
-        void OnTick(float deltaTime,
-                    AZ::ScriptTimePoint time) override;
-
-        // RPC callbacks
-        bool OnStartForward(const GridMate::RpcContext& rc);
-        bool OnStopForward(const GridMate::RpcContext& rc);
-        bool OnFireCommand(const GridMate::RpcContext& rc);
-
         // ServerPlayerBodyBus interface
         void SetAssociatedPlayerId(
             const GridMate::MemberIDCompact& player) override;
@@ -56,9 +38,6 @@ namespace GridMatePlayers
             const GridMate::TimeContext& tc);
 
     private:
-        bool m_movingForward = false;
-        float m_speed = 1.f;
-
         class Chunk;
         GridMate::ReplicaChunkPtr m_chunk;
 

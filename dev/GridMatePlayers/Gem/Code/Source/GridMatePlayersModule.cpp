@@ -13,6 +13,7 @@
 #include "Components/LocalClientComponent.h"
 #include "Components/ServerAuthPlayerComponent.h"
 #include "Components/ServerPlayerSpawner.h"
+#include "Components/ServerPlayerControlsComponent.h"
 
 namespace GridMatePlayers
 {
@@ -35,6 +36,7 @@ namespace GridMatePlayers
                 ServerPlayerSpawner::CreateDescriptor(),
                 ServerAuthPlayerComponent::CreateDescriptor(),
                 LocalClientComponent::CreateDescriptor(),
+                ServerPlayerControls::CreateDescriptor(),
             });
         }
 
