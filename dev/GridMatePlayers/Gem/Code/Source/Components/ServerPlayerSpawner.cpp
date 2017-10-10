@@ -38,11 +38,19 @@ void ServerPlayerSpawner::Reflect(ReflectContext* context)
 
 void ServerPlayerSpawner::Activate()
 {
-    if (NetQuery::IsEntityAuthoritative(GetEntityId()))
+    if (gEnv && gEnv->IsDedicated())
     {
-        if (gEnv && gEnv->pNetwork)
+        if (gEnv->pNetwork)
             SessionEventBus::Handler::BusConnect(
                 gEnv->pNetwork->GetGridMate());
+    }
+}
+
+void ServerPlayerSpawner::Deactivate()
+{
+    if (gEnv && gEnv->IsDedicated())
+    {
+        SessionEventBus::Handler::BusDisconnect();
     }
 }
 

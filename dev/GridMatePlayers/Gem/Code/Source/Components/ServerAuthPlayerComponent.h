@@ -41,14 +41,14 @@ namespace GridMatePlayers
         void OnTick(float deltaTime,
                     AZ::ScriptTimePoint time) override;
 
-        // ServerPlayerBodyBus interface
-        void SetAssociatedPlayerId(
-            const GridMate::MemberIDCompact& player) override;
-
         // RPC callbacks
         bool OnStartForward(const GridMate::RpcContext& rc);
         bool OnStopForward(const GridMate::RpcContext& rc);
         bool OnFireCommand(const GridMate::RpcContext& rc);
+
+        // ServerPlayerBodyBus interface
+        void SetAssociatedPlayerId(
+            const GridMate::MemberIDCompact& player) override;
 
         // DataSet callback
         void OnOwningPlayerChanged(

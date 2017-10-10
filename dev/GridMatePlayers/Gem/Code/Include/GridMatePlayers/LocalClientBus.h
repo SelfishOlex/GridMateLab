@@ -2,11 +2,6 @@
 #include <AzCore/EBus/EBus.h>
 #include <GridMate/Session/Session.h>
 
-namespace AZ
-{
-    class EntityId;
-}
-
 namespace GridMatePlayers
 {
     class LocalClientInterface

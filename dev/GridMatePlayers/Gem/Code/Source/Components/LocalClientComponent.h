@@ -32,8 +32,7 @@ namespace GridMatePlayers
             GridMate::GridMember* member) override;
 
     private:
-        GridMate::MemberIDCompact m_selfId = 0; // use invalid member id here
-        AZ::Vector3 m_cameraOffset =
-            AZ::Vector3::CreateZero();
+        GridMate::MemberIDCompact m_selfId = 0;
+        AZ::Vector3 m_cameraOffset = AZ::Vector3::CreateZero();
     };
 }

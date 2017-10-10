@@ -129,11 +129,13 @@ void ServerAuthPlayerComponent::Activate()
         TickBus::Handler::BusConnect();
         ServerPlayerBodyBus::Handler::BusConnect(GetEntityId());
     }
+    else
+    {
+        PlayerControlsBus::Handler::BusConnect(GetEntityId());
 
-    PlayerControlsBus::Handler::BusConnect(GetEntityId());
-
-    m_readyToConnectToBody = true;
-    BroadcastNewBody();
+        m_readyToConnectToBody = true;
+        BroadcastNewBody();
+    }
 }
 
 void ServerAuthPlayerComponent::Deactivate()
@@ -143,9 +145,11 @@ void ServerAuthPlayerComponent::Deactivate()
         TickBus::Handler::BusDisconnect();
         ServerPlayerBodyBus::Handler::BusDisconnect();
     }
-
-    PlayerControlsBus::Handler::BusDisconnect();
-    m_readyToConnectToBody = false;
+    else
+    {
+        PlayerControlsBus::Handler::BusDisconnect();
+        m_readyToConnectToBody = false;
+    }
 }
 
 void ServerAuthPlayerComponent::ForwardKeyUp()

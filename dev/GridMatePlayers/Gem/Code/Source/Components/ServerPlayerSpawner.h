@@ -20,7 +20,7 @@ namespace GridMatePlayers
     protected:
         // AZ::Component interface implementation
         void Activate() override;
-        void Deactivate() override {}
+        void Deactivate() override;
 
         // GridMate::SessionEventBus interface
         void OnMemberJoined(
@@ -34,7 +34,6 @@ namespace GridMatePlayers
                 override;
     private:
         GridMate::MemberIDCompact m_spawningPlayer = 0;
-
         AZ::u8 m_playerCount = 0;
     };
 }
