@@ -34,7 +34,6 @@ namespace GridMatePlayers
                 override;
     private:
         GridMate::MemberIDCompact m_spawningPlayer = 0;
-
         AZ::u8 m_playerCount = 0;
     };
 }

@@ -75,9 +75,6 @@ void LocalClientComponent::AttachToBody(
     auto t = Transform::CreateTranslation(m_cameraOffset);
 
     EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus,
-        SetWorldTM, t);
-
-    EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus,
         SetLocalTM, t);
 
     EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus,
