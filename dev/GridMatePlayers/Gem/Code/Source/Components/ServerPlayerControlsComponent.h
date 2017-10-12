@@ -51,5 +51,7 @@ namespace GridMatePlayers
 
         class Chunk;
         GridMate::ReplicaChunkPtr m_chunk;
+
+        AZ::u32 GetLocalTime() const;
     };
 }

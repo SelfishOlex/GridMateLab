@@ -6,6 +6,8 @@
 #include <LmbrCentral/Physics/CryCharacterPhysicsBus.h>
 #include <GridMatePlayers/PlayerActionsBus.h>
 #include "AzCore/Component/TransformBus.h"
+#include "GridMatePlayers/CharacterMovementRequestBus.h"
+#include "GridMate/Replica/ReplicaMgr.h"
 
 using namespace AZ;
 using namespace AzFramework;
@@ -128,6 +130,15 @@ void ServerPlayerControls::UnbindFromNetwork()
     }
 }
 
+AZ::u32 ServerPlayerControls::GetLocalTime() const
+{
+    if (m_chunk)
+        return m_chunk->GetReplicaManager()->
+            GetTime().m_localTime;
+
+    return 0;
+}
+
 void ServerPlayerControls::ForwardKeyUp()
 {
     if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
@@ -137,13 +148,33 @@ void ServerPlayerControls::ForwardKeyUp()
 void ServerPlayerControls::ForwardKeyDown()
 {
     if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
+    {
         chunk->m_startForward();
+
+        if (chunk->IsProxy())
+        {
+            EBUS_EVENT_ID(GetEntityId(),
+                CharacterMovementRequestBus,
+                OnCharacterMoveForward,
+                GetLocalTime());
+        }
+    }
 }
 
 void ServerPlayerControls::FireKeyUp()
 {
     if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
+    {
         chunk->m_fireCommand();
+
+        if (chunk->IsProxy())
+        {
+            EBUS_EVENT_ID(GetEntityId(),
+                CharacterMovementRequestBus,
+                OnCharacterStop,
+                GetLocalTime());
+        }
+    }
 }
 
 void ServerPlayerControls::OnTick(float deltaTime,
@@ -164,6 +195,11 @@ void ServerPlayerControls::OnTick(float deltaTime,
 bool ServerPlayerControls::OnStartForward(
     const GridMate::RpcContext& rc)
 {
+    EBUS_EVENT_ID(GetEntityId(),
+        CharacterMovementRequestBus,
+        OnCharacterMoveForward,
+        rc.m_timestamp);
+
     m_movingForward = true;
     return false;
 }
@@ -171,6 +207,11 @@ bool ServerPlayerControls::OnStartForward(
 bool ServerPlayerControls::OnStopForward(
     const GridMate::RpcContext& rc)
 {
+    EBUS_EVENT_ID(GetEntityId(),
+        CharacterMovementRequestBus,
+        OnCharacterStop,
+        rc.m_timestamp);
+
     m_movingForward = false;
     return false;
 }

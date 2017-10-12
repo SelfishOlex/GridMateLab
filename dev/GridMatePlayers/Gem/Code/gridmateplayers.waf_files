@@ -11,6 +11,8 @@
             "Include/GridMatePlayers/LocalClientBus.h",
             "Include/GridMatePlayers/GridMatePlayersBus.h",
             "Include/GridMatePlayers/PlayerActionsBus.h",
+            "Include/GridMatePlayers/CharacterMovementRequestBus.h",
+            "Include/GridMatePlayers/CharacterMovementNotificationBus.h",
             "Include/GridMatePlayers/PlayerControlsBus.h"
         ],
         "Source": [
@@ -18,19 +20,25 @@
             "Source/GridMatePlayersSystemComponent.cpp",
             "Source/GridMatePlayersSystemComponent.h"
         ],
+        "Source/Utils": [
+            "Source/Utils/MovementTrack.cpp",
+            "Source/Utils/MovementTrack.h"
+        ],
         "Source/Components": [
-            "Source/Components/LocalClientComponent.cpp",
-            "Source/Components/LocalClientComponent.h",
-            "Source/Components/ServerPlayerSpawner.cpp",
-            "Source/Components/ServerPlayerSpawner.h",
-            "Source/Components/ServerPlayerControlsComponent.cpp",
-            "Source/Components/ServerPlayerControlsComponent.h",
-            "Source/Components/ServerAuthPlayerComponent.cpp",
-            "Source/Components/ServerAuthPlayerComponent.h",
-            "Source/Components/PebbleSpawnerComponent.cpp",
-            "Source/Components/PebbleSpawnerComponent.h",
+            "Source/Components/CharacterTrackingComponent.cpp",
+            "Source/Components/CharacterTrackingComponent.h",
             "Source/Components/InputCaptureComponent.cpp",
             "Source/Components/InputCaptureComponent.h",
+            "Source/Components/LocalClientComponent.cpp",
+            "Source/Components/LocalClientComponent.h",
+            "Source/Components/PebbleSpawnerComponent.cpp",
+            "Source/Components/PebbleSpawnerComponent.h",
+            "Source/Components/ServerAuthPlayerComponent.cpp",
+            "Source/Components/ServerAuthPlayerComponent.h",
+            "Source/Components/ServerPlayerControlsComponent.cpp",
+            "Source/Components/ServerPlayerControlsComponent.h",
+            "Source/Components/ServerPlayerSpawner.cpp",
+            "Source/Components/ServerPlayerSpawner.h",
             "Source/Components/TimedProjectileComponent.cpp",
             "Source/Components/TimedProjectileComponent.h"
         ]
