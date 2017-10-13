@@ -1,7 +1,7 @@
 #pragma once
 #include <AzCore/Component/Component.h>
 #include "AzFramework/Network/NetBindable.h"
-#include "Utils/MovementTrack.h"
+#include "Utils/MovementHistory.h"
 #include "GridMatePlayers/CharacterMovementRequestBus.h"
 #include "AzCore/Component/TickBus.h"
 #include "AzCore/Component/TransformBus.h"
@@ -9,7 +9,7 @@
 
 namespace GridMatePlayers
 {
-    class CharacterTrackingComponent
+    class LocalPredictionComponent
         : public AZ::Component
         , public AzFramework::NetBindable
         , public CharacterMovementRequestBus::Handler
@@ -17,7 +17,7 @@ namespace GridMatePlayers
         , public AZ::TickBus::Handler
     {
     public:
-        AZ_COMPONENT(CharacterTrackingComponent,
+        AZ_COMPONENT(LocalPredictionComponent,
             "{03B4BDF1-930F-4955-9054-D352D4BEB5D5}",
             NetBindable);
 
@@ -61,6 +61,6 @@ namespace GridMatePlayers
         float m_speed = 0.f;
         float m_allowedDeviation = 0.1f;
 
-        MovementTrack m_history;
+        MovementHistory m_history;
     };
 }

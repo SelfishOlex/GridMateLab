@@ -1,16 +1,16 @@
 #include "StdAfx.h"
-#include "MovementTrack.h"
+#include "MovementHistory.h"
 #include "AzCore/Casting/numeric_cast.h"
 
 using namespace AZ;
 using namespace GridMatePlayers;
 
-MovementTrack::MovementTrack()
+MovementHistory::MovementHistory()
 {
     m_points.set_capacity(50);
 }
 
-void MovementTrack::AddDataPoint(const Vector3& t, u32 time)
+void MovementHistory::AddDataPoint(const Vector3& t, u32 time)
 {
     if (m_points.size() > 0)
     {
@@ -21,7 +21,7 @@ void MovementTrack::AddDataPoint(const Vector3& t, u32 time)
     m_points.push_back(DataPoint{ t, time });
 }
 
-Vector3 MovementTrack::GetPositionAt(u32 time)
+Vector3 MovementHistory::GetPositionAt(u32 time)
 {
     if (m_points.size() == 0)
         return Vector3::CreateZero();
@@ -54,7 +54,7 @@ Vector3 MovementTrack::GetPositionAt(u32 time)
     return b;
 }
 
-void MovementTrack::DeleteAfter(AZ::u32 time)
+void MovementHistory::DeleteAfter(AZ::u32 time)
 {
     while(m_points.size() > 0)
     {

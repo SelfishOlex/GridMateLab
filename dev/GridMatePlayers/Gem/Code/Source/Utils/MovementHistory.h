@@ -4,10 +4,10 @@
 
 namespace GridMatePlayers
 {
-    class MovementTrack
+    class MovementHistory
     {
     public:
-        MovementTrack();
+        MovementHistory();
 
         void AddDataPoint(const AZ::Vector3& t, AZ::u32 time);
         AZ::Vector3 GetPositionAt(AZ::u32 time);

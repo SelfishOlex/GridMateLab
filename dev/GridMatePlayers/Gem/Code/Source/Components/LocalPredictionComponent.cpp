@@ -1,5 +1,5 @@
 #include "StdAfx.h"
-#include "CharacterTrackingComponent.h"
+#include "LocalPredictionComponent.h"
 #include <AzCore/Serialization/EditContext.h>
 #include "GridMate/Replica/ReplicaFunctions.h"
 #include "AzFramework/Network/NetBindingHandlerBus.h"
@@ -12,7 +12,7 @@ using namespace AzFramework;
 using namespace GridMate;
 using namespace GridMatePlayers;
 
-class CharacterTrackingComponent::Chunk : public ReplicaChunk
+class LocalPredictionComponent::Chunk : public ReplicaChunk
 {
 public:
     GM_CLASS_ALLOCATOR(Chunk);
@@ -21,26 +21,27 @@ public:
 
     static const char* GetChunkName()
     {
-        return "CharacterTrackingComponent::Chunk";
+        return "LocalPredictionComponent::Chunk";
     }
 
     DataSetVectorInTime::BindInterface<
-            CharacterTrackingComponent,
-            &CharacterTrackingComponent::OnNewServerCheckpoint>
+            LocalPredictionComponent,
+            &LocalPredictionComponent::OnNewServerCheckpoint>
         m_serverCheckpoint;
 };
 
-void CharacterTrackingComponent::Reflect(ReflectContext* reflect)
+void LocalPredictionComponent::Reflect(ReflectContext* reflect)
 {
     if (auto sc = azrtti_cast<SerializeContext*>(reflect))
     {
-        sc->Class<CharacterTrackingComponent, Component>()
+        sc->Class<LocalPredictionComponent, Component>()
             ->Version(1);
 
         if (auto ec = sc->GetEditContext())
         {
-            ec->Class<CharacterTrackingComponent>(
-                "Character Tracking", "[Description]")
+            ec->Class<LocalPredictionComponent>(
+                "Local Prediction",
+                "[Guesses how server will move the character]")
                 ->ClassElement(
                     Edit::ClassElements::EditorData, "")
                 ->Attribute(Edit::Attributes::Category,
@@ -59,7 +60,7 @@ void CharacterTrackingComponent::Reflect(ReflectContext* reflect)
     }
 }
 
-void CharacterTrackingComponent::Activate()
+void LocalPredictionComponent::Activate()
 {
     const auto self = GetEntityId();
     CharacterMovementRequestBus::Handler::BusConnect(self);
@@ -72,7 +73,7 @@ void CharacterTrackingComponent::Activate()
     m_isActive = true;
 }
 
-void CharacterTrackingComponent::Deactivate()
+void LocalPredictionComponent::Deactivate()
 {
     m_isActive = false;
     CharacterMovementRequestBus::Handler::BusDisconnect();
@@ -83,27 +84,27 @@ void CharacterTrackingComponent::Deactivate()
         TickBus::Handler::BusDisconnect();
 }
 
-ReplicaChunkPtr CharacterTrackingComponent::GetNetworkBinding()
+ReplicaChunkPtr LocalPredictionComponent::GetNetworkBinding()
 {
     m_chunk = GridMate::CreateReplicaChunk<Chunk>();
     m_chunk->SetHandler(this);
     return m_chunk;
 }
 
-void CharacterTrackingComponent::SetNetworkBinding(
+void LocalPredictionComponent::SetNetworkBinding(
     ReplicaChunkPtr chunk)
 {
     m_chunk = chunk;
     m_chunk->SetHandler(this);
 }
 
-void CharacterTrackingComponent::UnbindFromNetwork()
+void LocalPredictionComponent::UnbindFromNetwork()
 {
     m_chunk->SetHandler(nullptr);
     m_chunk = nullptr;
 }
 
-void CharacterTrackingComponent::OnCharacterMoveForward(
+void LocalPredictionComponent::OnCharacterMoveForward(
     float speed, u32 time)
 {
     m_movingForward = true;
@@ -113,7 +114,7 @@ void CharacterTrackingComponent::OnCharacterMoveForward(
     m_history.AddDataPoint(GetPosition(), time);
 }
 
-void CharacterTrackingComponent::OnCharacterStop(u32 time)
+void LocalPredictionComponent::OnCharacterStop(u32 time)
 {
     m_movingForward = false;
     m_speed = 0;
@@ -122,7 +123,7 @@ void CharacterTrackingComponent::OnCharacterStop(u32 time)
     m_history.AddDataPoint(GetPosition(), time);
 }
 
-void CharacterTrackingComponent::OnTransformChanged(
+void LocalPredictionComponent::OnTransformChanged(
     const AZ::Transform&, const AZ::Transform& world)
 {
     if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
@@ -141,7 +142,7 @@ void CharacterTrackingComponent::OnTransformChanged(
     }
 }
 
-void CharacterTrackingComponent::OnTick(float, ScriptTimePoint)
+void LocalPredictionComponent::OnTick(float, ScriptTimePoint)
 {
     EBUS_EVENT_ID(GetEntityId(),
         LmbrCentral::CryCharacterPhysicsRequestBus,
@@ -149,7 +150,7 @@ void CharacterTrackingComponent::OnTick(float, ScriptTimePoint)
         Vector3::CreateAxisY(m_speed), 0);
 }
 
-Vector3 CharacterTrackingComponent::GetPosition() const
+Vector3 LocalPredictionComponent::GetPosition() const
 {
     auto t = AZ::Transform::CreateIdentity();
     EBUS_EVENT_ID_RESULT(t, GetEntityId(), AZ::TransformBus,
@@ -157,13 +158,13 @@ Vector3 CharacterTrackingComponent::GetPosition() const
     return t.GetTranslation();
 }
 
-AZ::u32 CharacterTrackingComponent::GetTime() const
+AZ::u32 LocalPredictionComponent::GetTime() const
 {
     if (!m_chunk) return 0;
     return m_chunk->GetReplicaManager()->GetTime().m_localTime;
 }
 
-void CharacterTrackingComponent::OnNewServerCheckpoint(
+void LocalPredictionComponent::OnNewServerCheckpoint(
     const VectorInTime& value, const GridMate::TimeContext&)
 {
     if (m_isActive &&

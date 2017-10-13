@@ -14,7 +14,7 @@
 #include "Components/ServerAuthPlayerComponent.h"
 #include "Components/ServerPlayerSpawner.h"
 #include "Components/ServerPlayerControlsComponent.h"
-#include "Components/CharacterTrackingComponent.h"
+#include "Components/LocalPredictionComponent.h"
 
 namespace GridMatePlayers
 {
@@ -38,7 +38,7 @@ namespace GridMatePlayers
                 ServerAuthPlayerComponent::CreateDescriptor(),
                 LocalClientComponent::CreateDescriptor(),
                 ServerPlayerControls::CreateDescriptor(),
-                CharacterTrackingComponent::CreateDescriptor(),
+                LocalPredictionComponent::CreateDescriptor(),
             });
         }
 

@@ -22,16 +22,16 @@
         "Source/Utils": [
             "Source/Utils/VectorInTime.cpp",
             "Source/Utils/VectorInTime.h",
-            "Source/Utils/MovementTrack.cpp",
-            "Source/Utils/MovementTrack.h"
+            "Source/Utils/MovementHistory.cpp",
+            "Source/Utils/MovementHistory.h"
         ],
         "Source/Components": [
-            "Source/Components/CharacterTrackingComponent.cpp",
-            "Source/Components/CharacterTrackingComponent.h",
             "Source/Components/InputCaptureComponent.cpp",
             "Source/Components/InputCaptureComponent.h",
             "Source/Components/LocalClientComponent.cpp",
             "Source/Components/LocalClientComponent.h",
+            "Source/Components/LocalPredictionComponent.cpp",
+            "Source/Components/LocalPredictionComponent.h",
             "Source/Components/PebbleSpawnerComponent.cpp",
             "Source/Components/PebbleSpawnerComponent.h",
             "Source/Components/ServerAuthPlayerComponent.cpp",

@@ -85,9 +85,11 @@ void ServerPlayerControls::Reflect(AZ::ReflectContext* reflection)
 
 void ServerPlayerControls::Activate()
 {
-    TickBus::Handler::BusConnect();
-
-    if (!NetQuery::IsEntityAuthoritative(GetEntityId()))
+    if (NetQuery::IsEntityAuthoritative(GetEntityId()))
+    {
+        TickBus::Handler::BusConnect();
+    }
+    else
     {
         PlayerControlsBus::Handler::BusConnect(GetEntityId());
     }
@@ -95,9 +97,11 @@ void ServerPlayerControls::Activate()
 
 void ServerPlayerControls::Deactivate()
 {
-    TickBus::Handler::BusDisconnect();
-
-    if (!NetQuery::IsEntityAuthoritative(GetEntityId()))
+    if (NetQuery::IsEntityAuthoritative(GetEntityId()))
+    {
+        TickBus::Handler::BusDisconnect();
+    }
+    else
     {
         PlayerControlsBus::Handler::BusDisconnect();
     }
@@ -128,11 +132,8 @@ void ServerPlayerControls::UnbindFromNetwork()
 
 AZ::u32 ServerPlayerControls::GetLocalTime() const
 {
-    if (m_chunk)
-        return m_chunk->GetReplicaManager()->
-            GetTime().m_localTime;
-
-    return 0;
+    if (!m_chunk) return 0;
+    return m_chunk->GetReplicaManager()->GetTime().m_localTime;
 }
 
 void ServerPlayerControls::ForwardKeyUp()
@@ -164,9 +165,7 @@ void ServerPlayerControls::ForwardKeyDown()
 void ServerPlayerControls::FireKeyUp()
 {
     if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
-    {
         chunk->m_fireCommand();
-    }
 }
 
 void ServerPlayerControls::OnTick(float deltaTime,
