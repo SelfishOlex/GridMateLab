@@ -12,28 +12,6 @@ using namespace AzFramework;
 using namespace GridMate;
 using namespace GridMatePlayers;
 
-struct CharacterTrackingComponent::PositionInTime::Throttler
-{
-    bool WithinThreshold(const PositionInTime& cur) const
-    {
-        if (cur.m_time != m_baseline.m_time)
-            return false;
-
-        const auto diff = m_baseline.m_position - cur.m_position;
-        const auto length = diff.GetLengthSq();
-
-        return length < 0.1f;
-    }
-
-    void UpdateBaseline(const PositionInTime& baseline)
-    {
-        m_baseline = baseline;
-    }
-
-private:
-    PositionInTime m_baseline;
-};
-
 class CharacterTrackingComponent::Chunk
     : public ReplicaChunk
 {
@@ -49,10 +27,7 @@ public:
         return "CharacterTrackingComponent::Chunk";
     }
 
-    DataSet<PositionInTime,
-            PositionInTime::Marshaler,
-            PositionInTime::Throttler>::
-        BindInterface<
+    DataSetVectorInTime::BindInterface<
             CharacterTrackingComponent,
             &CharacterTrackingComponent::OnNewCheckpoint>
         m_serverCheckpoint;
@@ -130,11 +105,8 @@ void CharacterTrackingComponent::SetNetworkBinding(
 
 void CharacterTrackingComponent::UnbindFromNetwork()
 {
-    if (m_chunk)
-    {
-        m_chunk->SetHandler(nullptr);
-        m_chunk = nullptr;
-    }
+    m_chunk->SetHandler(nullptr);
+    m_chunk = nullptr;
 }
 
 void CharacterTrackingComponent::OnCharacterMoveUpdate(
@@ -144,7 +116,8 @@ void CharacterTrackingComponent::OnCharacterMoveUpdate(
     {
         const auto local = m_movePoints.GetPositionAt(timestamp);
 
-        if (!IsClose(local, serverPosition))
+        const auto diff = local - serverPosition;
+        if (diff.GetLengthSq() > m_allowedDeviation)
         {
             AZ_Printf("Book", "6. checking (-- %f --) @ %d vs (-- %f --) @ %d",
                 //static_cast<float>(serverPosition.GetX()),
@@ -177,29 +150,15 @@ void CharacterTrackingComponent::OnCharacterMoveForward(
 {
     m_movingForward = true;
     m_speed = speed;
-
-    if (m_chunk && m_chunk->IsProxy())
-    {
-        AZ_Printf("Book", "2. add movement point");
-        m_movePoints.AddDataPoint(GetLocalTM().GetTranslation(), time);
-    }
-    else if (m_chunk && m_chunk->IsMaster())
-    {
-        AZ_Printf("Book", "4. add movement point");
-    }
+    AZ_Printf("Book", "2. add movement point");
+    m_movePoints.AddDataPoint(GetPosition(), time);
 }
 
 void CharacterTrackingComponent::OnCharacterStop(u32 time)
 {
     m_movingForward = false;
     m_speed = 0;
-
-    if (m_chunk && m_chunk->IsProxy())
-    {
-        AZ_Printf("Book", "--- STOP moving");
-
-        m_movePoints.AddDataPoint(GetLocalTM().GetTranslation(), time);
-    }
+    m_movePoints.AddDataPoint(GetPosition(), time);
 }
 
 void CharacterTrackingComponent::OnTransformChanged(
@@ -209,8 +168,8 @@ void CharacterTrackingComponent::OnTransformChanged(
     {
         if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
         {
-            const auto diff = chunk->m_serverCheckpoint.Get().m_position - world.GetTranslation();
-            if (diff.GetLengthSq() < 0.1) return;
+            const auto diff = chunk->m_serverCheckpoint.Get().m_vector - world.GetTranslation();
+            if (diff.GetLengthSq() < m_allowedDeviation) return;
 
             AZ_Printf("Book", "5. server movement check point (-- %f --) @ %d",
                 //static_cast<float>(world.GetTranslation().GetX()),
@@ -219,7 +178,7 @@ void CharacterTrackingComponent::OnTransformChanged(
                 GetTime());
 
             chunk->m_serverCheckpoint.Set(
-                PositionInTime(world.GetTranslation(), GetTime()));
+                { world.GetTranslation(), GetTime() });
         }
     }
 }
@@ -227,49 +186,33 @@ void CharacterTrackingComponent::OnTransformChanged(
 void CharacterTrackingComponent::OnTick(float deltaTime,
     AZ::ScriptTimePoint time)
 {
-    const auto moveDirection = Vector3::CreateAxisY(m_speed);
-
     EBUS_EVENT_ID(GetEntityId(),
         LmbrCentral::CryCharacterPhysicsRequestBus,
         RequestVelocity,
-        moveDirection, 0);
+        Vector3::CreateAxisY(m_speed), 0);
 }
 
-Transform CharacterTrackingComponent::GetLocalTM()
+Vector3 CharacterTrackingComponent::GetPosition() const
 {
     auto t = AZ::Transform::CreateIdentity();
     EBUS_EVENT_ID_RESULT(t, GetEntityId(), AZ::TransformBus,
         GetWorldTM);
-    return t;
+    return t.GetTranslation();
 }
 
-AZ::u32 CharacterTrackingComponent::GetTime()
+AZ::u32 CharacterTrackingComponent::GetTime() const
 {
     if (!m_chunk) return 0;
     return m_chunk->GetReplicaManager()->GetTime().m_localTime;
 }
 
-bool CharacterTrackingComponent::IsClose(
-    const AZ::Vector3& one, const AZ::Vector3& two) const
-{
-    const auto diff = one - two;
-    return diff.GetLengthSq() < 0.1f;
-}
-
-bool CharacterTrackingComponent::PositionInTime::operator==(
-    const PositionInTime& other) const
-{
-    return false;
-}
-
 void CharacterTrackingComponent::OnNewCheckpoint(
-    const PositionInTime& value, const GridMate::TimeContext& tc)
+    const VectorInTime& value, const GridMate::TimeContext& tc)
 {
-    if (NetQuery::IsEntityAuthoritative(GetEntityId())) return;
-
-    if (m_isActive)
+    if (m_isActive &&
+        !NetQuery::IsEntityAuthoritative(GetEntityId()))
     {
         AZ_Printf("Book", "6. check history");
-        OnCharacterMoveUpdate(value.m_position, value.m_time);
+        OnCharacterMoveUpdate(value.m_vector, value.m_time);
     }
 }

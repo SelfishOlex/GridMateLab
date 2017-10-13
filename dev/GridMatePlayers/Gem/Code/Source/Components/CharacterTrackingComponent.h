@@ -6,6 +6,7 @@
 #include "GridMatePlayers/CharacterMovementRequestBus.h"
 #include "AzCore/Component/TickBus.h"
 #include "AzCore/Component/TransformBus.h"
+#include "Utils/VectorInTime.h"
 
 namespace GridMatePlayers
 {
@@ -24,6 +25,7 @@ namespace GridMatePlayers
 
         static void Reflect(AZ::ReflectContext* reflection);
 
+    protected:
         void Activate() override;
         void Deactivate() override;
 
@@ -50,57 +52,21 @@ namespace GridMatePlayers
         void OnTick(float deltaTime, AZ::ScriptTimePoint time)
             override;
 
+        void OnNewCheckpoint(const VectorInTime& value,
+            const GridMate::TimeContext &tc);
+
+        AZ::Vector3 GetPosition() const;
+        AZ::u32 GetTime() const;
+
     private:
         class Chunk;
         GridMate::ReplicaChunkPtr m_chunk;
 
+        bool m_isActive = false;
         bool m_movingForward = false;
         float m_speed = 0.f;
-
-        bool m_isActive = false;
-
-        AZ::Transform GetLocalTM();
-        AZ::u32 GetTime();
-        bool IsClose(const AZ::Vector3& one,
-            const AZ::Vector3& another) const;
+        float m_allowedDeviation = 0.1f;
 
         MovementTrack m_movePoints;
-
-        class PositionInTime
-        {
-        public:
-            PositionInTime() {}
-
-            PositionInTime(
-                const AZ::Vector3& t, AZ::u32 time)
-                : m_position(t), m_time(time) {}
-
-            AZ::Vector3 m_position;
-            AZ::u32     m_time = 0;
-
-            struct Marshaler
-            {
-                void Marshal(GridMate::WriteBuffer& wb,
-                    const PositionInTime& value) const
-                {
-                    wb.Write(value.m_position);
-                    wb.Write(value.m_time);
-                }
-
-                void Unmarshal(PositionInTime& value,
-                    GridMate::ReadBuffer& rb) const
-                {
-                    rb.Read(value.m_position);
-                    rb.Read(value.m_time);
-                }
-            };
-
-            struct Throttler;
-
-            bool operator==(const PositionInTime& other) const;
-        };
-
-        void OnNewCheckpoint(const PositionInTime& value,
-            const GridMate::TimeContext &tc);
     };
 }

@@ -21,6 +21,8 @@
             "Source/GridMatePlayersSystemComponent.h"
         ],
         "Source/Utils": [
+            "Source/Utils/VectorInTime.cpp",
+            "Source/Utils/VectorInTime.h",
             "Source/Utils/MovementTrack.cpp",
             "Source/Utils/MovementTrack.h"
         ],
