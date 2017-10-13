@@ -12,7 +12,6 @@
             "Include/GridMatePlayers/GridMatePlayersBus.h",
             "Include/GridMatePlayers/PlayerActionsBus.h",
             "Include/GridMatePlayers/CharacterMovementRequestBus.h",
-            "Include/GridMatePlayers/CharacterMovementNotificationBus.h",
             "Include/GridMatePlayers/PlayerControlsBus.h"
         ],
         "Source": [

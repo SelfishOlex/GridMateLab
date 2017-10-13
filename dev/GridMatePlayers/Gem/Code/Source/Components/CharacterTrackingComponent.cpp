@@ -29,7 +29,7 @@ public:
 
     DataSetVectorInTime::BindInterface<
             CharacterTrackingComponent,
-            &CharacterTrackingComponent::OnNewCheckpoint>
+            &CharacterTrackingComponent::OnNewServerCheckpoint>
         m_serverCheckpoint;
 };
 
@@ -66,7 +66,6 @@ void CharacterTrackingComponent::Activate()
 {
     const auto self = GetEntityId();
     CharacterMovementRequestBus::Handler::BusConnect(self);
-    CharacterMovementNotificationBus::Handler::BusConnect(self);
 
     if (NetQuery::IsEntityAuthoritative(GetEntityId()))
         TransformNotificationBus::Handler::BusConnect(self);
@@ -79,9 +78,7 @@ void CharacterTrackingComponent::Activate()
 void CharacterTrackingComponent::Deactivate()
 {
     m_isActive = false;
-
     CharacterMovementRequestBus::Handler::BusDisconnect();
-    CharacterMovementNotificationBus::Handler::BusDisconnect();
 
     if (NetQuery::IsEntityAuthoritative(GetEntityId()))
         TransformNotificationBus::Handler::BusDisconnect();
@@ -109,56 +106,23 @@ void CharacterTrackingComponent::UnbindFromNetwork()
     m_chunk = nullptr;
 }
 
-void CharacterTrackingComponent::OnCharacterMoveUpdate(
-    const Vector3& serverPosition, u32 timestamp)
-{
-    if (m_chunk && m_chunk->IsProxy())
-    {
-        const auto local = m_movePoints.GetPositionAt(timestamp);
-
-        const auto diff = local - serverPosition;
-        if (diff.GetLengthSq() > m_allowedDeviation)
-        {
-            AZ_Printf("Book", "6. checking (-- %f --) @ %d vs (-- %f --) @ %d",
-                //static_cast<float>(serverPosition.GetX()),
-                static_cast<float>(serverPosition.GetY()),
-                //static_cast<float>(serverPosition.GetZ()),
-                timestamp,
-                //static_cast<float>(local.GetX()),
-                static_cast<float>(local.GetY()),
-                //static_cast<float>(local.GetZ())
-                GetTime()
-            );
-
-            AZ_Printf("Book", "7. correcting");
-
-            EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus,
-                SetWorldTM, Transform::CreateTranslation(serverPosition));
-
-            m_movePoints.DeleteAfter(timestamp);
-            m_movePoints.AddDataPoint(serverPosition, timestamp);
-        }
-        else
-        {
-            //AZ_Printf("Book", "7a. history agrees");
-        }
-    }
-}
-
 void CharacterTrackingComponent::OnCharacterMoveForward(
     float speed, u32 time)
 {
     m_movingForward = true;
     m_speed = speed;
-    AZ_Printf("Book", "2. add movement point");
-    m_movePoints.AddDataPoint(GetPosition(), time);
+    AZ_Printf("Book", "2. forwad, local (-- %f --) @ %d",
+        static_cast<float>(GetPosition().GetY()), time);
+    m_history.AddDataPoint(GetPosition(), time);
 }
 
 void CharacterTrackingComponent::OnCharacterStop(u32 time)
 {
     m_movingForward = false;
     m_speed = 0;
-    m_movePoints.AddDataPoint(GetPosition(), time);
+    AZ_Printf("Book", "2. stopped, local (-- %f --) @ %d",
+        static_cast<float>(GetPosition().GetY()), time);
+    m_history.AddDataPoint(GetPosition(), time);
 }
 
 void CharacterTrackingComponent::OnTransformChanged(
@@ -168,13 +132,12 @@ void CharacterTrackingComponent::OnTransformChanged(
     {
         if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
         {
-            const auto diff = chunk->m_serverCheckpoint.Get().m_vector - world.GetTranslation();
+            const auto diff = chunk->m_serverCheckpoint.Get()
+                .m_vector - world.GetTranslation();
             if (diff.GetLengthSq() < m_allowedDeviation) return;
 
-            AZ_Printf("Book", "5. server movement check point (-- %f --) @ %d",
-                //static_cast<float>(world.GetTranslation().GetX()),
+            AZ_Printf("Book", "5. server (-- %f --) @ %d",
                 static_cast<float>(world.GetTranslation().GetY()),
-                //static_cast<float>(world.GetTranslation().GetZ()),
                 GetTime());
 
             chunk->m_serverCheckpoint.Set(
@@ -206,13 +169,26 @@ AZ::u32 CharacterTrackingComponent::GetTime() const
     return m_chunk->GetReplicaManager()->GetTime().m_localTime;
 }
 
-void CharacterTrackingComponent::OnNewCheckpoint(
-    const VectorInTime& value, const GridMate::TimeContext& tc)
+void CharacterTrackingComponent::OnNewServerCheckpoint(
+    const VectorInTime& value, const GridMate::TimeContext&)
 {
     if (m_isActive &&
         !NetQuery::IsEntityAuthoritative(GetEntityId()))
     {
         AZ_Printf("Book", "6. check history");
-        OnCharacterMoveUpdate(value.m_vector, value.m_time);
+        const auto& serverPosition = value.m_vector;
+
+        const auto local = m_history.GetPositionAt(value.m_time);
+
+        const auto diff = local - serverPosition;
+        if (diff.GetLengthSq() > m_allowedDeviation)
+        {
+            EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus,
+                SetWorldTM,
+                Transform::CreateTranslation(serverPosition));
+
+            m_history.DeleteAfter(value.m_time);
+            m_history.AddDataPoint(serverPosition, value.m_time);
+        }
     }
 }
