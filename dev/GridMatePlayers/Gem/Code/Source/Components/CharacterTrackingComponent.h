@@ -5,6 +5,7 @@
 #include "Utils/MovementTrack.h"
 #include "GridMatePlayers/CharacterMovementRequestBus.h"
 #include "AzCore/Component/TickBus.h"
+#include "AzCore/Component/TransformBus.h"
 
 namespace GridMatePlayers
 {
@@ -13,6 +14,7 @@ namespace GridMatePlayers
         , public AzFramework::NetBindable
         , public CharacterMovementNotificationBus::Handler
         , public CharacterMovementRequestBus::Handler
+        , public AZ::TransformNotificationBus::Handler
         , public AZ::TickBus::Handler
     {
     public:
@@ -32,59 +34,73 @@ namespace GridMatePlayers
         void UnbindFromNetwork() override;
 
         // CharacterMovementNotificationBus
-        void OnCharacterMoveUpdate(const AZ::Transform& t,
-            AZ::u32 timestamp) override;
+        void OnCharacterMoveUpdate(const AZ::Vector3& serverPos,
+            AZ::u32 time) override;
 
         // CharacterMovementRequestBus
-        void OnCharacterMoveForward(AZ::u32 time) override;
+        void OnCharacterMoveForward(float speed,
+            AZ::u32 time) override;
         void OnCharacterStop(AZ::u32 time) override;
 
+        // TransformNotificationBus
+        void OnTransformChanged(const AZ::Transform& local,
+            const AZ::Transform& world) override;
+
         // TickBus
-        void OnTick(float dt, AZ::ScriptTimePoint) override;
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time)
+            override;
 
     private:
         class Chunk;
         GridMate::ReplicaChunkPtr m_chunk;
 
-        MovementTrack m_movePoints;
-        float m_speed = 1.f; // use from ServerPlayerControls?
+        bool m_movingForward = false;
+        float m_speed = 0.f;
+
+        bool m_isActive = false;
 
         AZ::Transform GetLocalTM();
         AZ::u32 GetTime();
-        bool Compare(const AZ::Transform& one,
-            const AZ::Transform& another) const;
+        bool IsClose(const AZ::Vector3& one,
+            const AZ::Vector3& another) const;
 
-        class TransformWithTime
+        MovementTrack m_movePoints;
+
+        class PositionInTime
         {
         public:
-            TransformWithTime() {}
-            TransformWithTime(const AZ::Transform& t, AZ::u32 time)
-                : m_transform(t), m_time(time) {}
+            PositionInTime() {}
 
-            AZ::Transform m_transform;
-            AZ::u32       m_time = 0;
+            PositionInTime(
+                const AZ::Vector3& t, AZ::u32 time)
+                : m_position(t), m_time(time) {}
+
+            AZ::Vector3 m_position;
+            AZ::u32     m_time = 0;
 
             struct Marshaler
             {
                 void Marshal(GridMate::WriteBuffer& wb,
-                    const TransformWithTime& value) const
+                    const PositionInTime& value) const
                 {
-                    wb.Write(value.m_transform);
+                    wb.Write(value.m_position);
                     wb.Write(value.m_time);
                 }
 
-                void Unmarshal(TransformWithTime& value,
-                               GridMate::ReadBuffer& rb) const
+                void Unmarshal(PositionInTime& value,
+                    GridMate::ReadBuffer& rb) const
                 {
-                    rb.Read(value.m_transform);
+                    rb.Read(value.m_position);
                     rb.Read(value.m_time);
                 }
             };
 
-            bool operator==(const TransformWithTime& another) const;
+            struct Throttler;
+
+            bool operator==(const PositionInTime& other) const;
         };
 
-        void OnNewCheckpoint(const TransformWithTime& value,
+        void OnNewCheckpoint(const PositionInTime& value,
             const GridMate::TimeContext &tc);
     };
 }

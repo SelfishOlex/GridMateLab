@@ -19,7 +19,7 @@ namespace GridMatePlayers
         using BusIdType = AZ::EntityId;
 
         virtual void OnCharacterMoveUpdate(
-            const AZ::Transform& t,
+            const AZ::Vector3& serverPos,
             AZ::u32 time) = 0;
     };
 

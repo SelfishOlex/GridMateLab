@@ -3,14 +3,36 @@
 #include <AzCore/Serialization/EditContext.h>
 #include "GridMate/Replica/ReplicaFunctions.h"
 #include "AzFramework/Network/NetBindingHandlerBus.h"
-#include "LmbrCentral/Physics/CryCharacterPhysicsBus.h"
 #include "AzCore/Component/TransformBus.h"
 #include "GridMate/Replica/ReplicaMgr.h"
+#include "LmbrCentral/Physics/CryCharacterPhysicsBus.h"
 
 using namespace AZ;
 using namespace AzFramework;
 using namespace GridMate;
 using namespace GridMatePlayers;
+
+struct CharacterTrackingComponent::PositionInTime::Throttler
+{
+    bool WithinThreshold(const PositionInTime& cur) const
+    {
+        if (cur.m_time != m_baseline.m_time)
+            return false;
+
+        const auto diff = m_baseline.m_position - cur.m_position;
+        const auto length = diff.GetLengthSq();
+
+        return length < 0.1f;
+    }
+
+    void UpdateBaseline(const PositionInTime& baseline)
+    {
+        m_baseline = baseline;
+    }
+
+private:
+    PositionInTime m_baseline;
+};
 
 class CharacterTrackingComponent::Chunk
     : public ReplicaChunk
@@ -18,7 +40,7 @@ class CharacterTrackingComponent::Chunk
 public:
     GM_CLASS_ALLOCATOR(Chunk);
     Chunk()
-        : m_serverCheckpoint("Server Check Point") {}
+        : m_serverCheckpoint("Server Checkpoint") {}
 
     bool IsReplicaMigratable() override { return true; }
 
@@ -27,27 +49,33 @@ public:
         return "CharacterTrackingComponent::Chunk";
     }
 
-    DataSet<TransformWithTime, TransformWithTime::Marshaler>::
-        BindInterface<CharacterTrackingComponent,
-        &CharacterTrackingComponent::OnNewCheckpoint>
-    m_serverCheckpoint;
+    DataSet<PositionInTime,
+            PositionInTime::Marshaler,
+            PositionInTime::Throttler>::
+        BindInterface<
+            CharacterTrackingComponent,
+            &CharacterTrackingComponent::OnNewCheckpoint>
+        m_serverCheckpoint;
 };
 
 void CharacterTrackingComponent::Reflect(ReflectContext* reflect)
 {
     if (auto sc = azrtti_cast<SerializeContext*>(reflect))
     {
-        sc->Class<CharacterTrackingComponent>()
+        sc->Class<CharacterTrackingComponent, Component>()
             ->Version(1);
 
         if (auto ec = sc->GetEditContext())
         {
             ec->Class<CharacterTrackingComponent>(
-                "CharacterTrackingComponent", "[Description]")
+                "Character Tracking", "[Description]")
                 ->ClassElement(
                     Edit::ClassElements::EditorData, "")
                 ->Attribute(Edit::Attributes::Category,
-                    "GridMatePlayers");
+                    "GridMate Players")
+                ->Attribute(Edit::Attributes::
+                    AppearsInAddComponentMenu,
+                    AZ_CRC("Game"));
         }
     }
 
@@ -64,14 +92,26 @@ void CharacterTrackingComponent::Activate()
     const auto self = GetEntityId();
     CharacterMovementRequestBus::Handler::BusConnect(self);
     CharacterMovementNotificationBus::Handler::BusConnect(self);
-    TickBus::Handler::BusConnect();
+
+    if (NetQuery::IsEntityAuthoritative(GetEntityId()))
+        TransformNotificationBus::Handler::BusConnect(self);
+    else
+        TickBus::Handler::BusConnect();
+
+    m_isActive = true;
 }
 
 void CharacterTrackingComponent::Deactivate()
 {
+    m_isActive = false;
+
     CharacterMovementRequestBus::Handler::BusDisconnect();
     CharacterMovementNotificationBus::Handler::BusDisconnect();
-    TickBus::Handler::BusDisconnect();
+
+    if (NetQuery::IsEntityAuthoritative(GetEntityId()))
+        TransformNotificationBus::Handler::BusDisconnect();
+    else
+        TickBus::Handler::BusDisconnect();
 }
 
 ReplicaChunkPtr CharacterTrackingComponent::GetNetworkBinding()
@@ -98,60 +138,101 @@ void CharacterTrackingComponent::UnbindFromNetwork()
 }
 
 void CharacterTrackingComponent::OnCharacterMoveUpdate(
-    const Transform& serverTransform, u32 timestamp)
+    const Vector3& serverPosition, u32 timestamp)
 {
     if (m_chunk && m_chunk->IsProxy())
     {
-        const auto local = m_movePoints.GetTransformAt(timestamp);
-        if (!Compare(local, serverTransform))
-        {
-            // Correction
-            EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus,
-                SetWorldTM, serverTransform);
+        const auto local = m_movePoints.GetPositionAt(timestamp);
 
-            m_movePoints.AddDataPoint(serverTransform, timestamp);
+        if (!IsClose(local, serverPosition))
+        {
+            AZ_Printf("Book", "6. checking (-- %f --) @ %d vs (-- %f --) @ %d",
+                //static_cast<float>(serverPosition.GetX()),
+                static_cast<float>(serverPosition.GetY()),
+                //static_cast<float>(serverPosition.GetZ()),
+                timestamp,
+                //static_cast<float>(local.GetX()),
+                static_cast<float>(local.GetY()),
+                //static_cast<float>(local.GetZ())
+                GetTime()
+            );
+
+            AZ_Printf("Book", "7. correcting");
+
+            EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus,
+                SetWorldTM, Transform::CreateTranslation(serverPosition));
+
+            m_movePoints.DeleteAfter(timestamp);
+            m_movePoints.AddDataPoint(serverPosition, timestamp);
+        }
+        else
+        {
+            //AZ_Printf("Book", "7a. history agrees");
         }
     }
 }
 
-void CharacterTrackingComponent::OnCharacterMoveForward(u32 time)
+void CharacterTrackingComponent::OnCharacterMoveForward(
+    float speed, u32 time)
 {
+    m_movingForward = true;
+    m_speed = speed;
+
     if (m_chunk && m_chunk->IsProxy())
     {
-        const auto moveDirection = Vector3::CreateAxisY(m_speed);
-
-        EBUS_EVENT_ID(GetEntityId(),
-            LmbrCentral::CryCharacterPhysicsRequestBus,
-            RequestVelocity,
-            moveDirection, 0);
-
-        m_movePoints.AddDataPoint(GetLocalTM(), time);
+        AZ_Printf("Book", "2. add movement point");
+        m_movePoints.AddDataPoint(GetLocalTM().GetTranslation(), time);
+    }
+    else if (m_chunk && m_chunk->IsMaster())
+    {
+        AZ_Printf("Book", "4. add movement point");
     }
 }
 
 void CharacterTrackingComponent::OnCharacterStop(u32 time)
 {
+    m_movingForward = false;
+    m_speed = 0;
+
     if (m_chunk && m_chunk->IsProxy())
     {
-        EBUS_EVENT_ID(GetEntityId(),
-            LmbrCentral::CryCharacterPhysicsRequestBus,
-            RequestVelocity,
-            Vector3::CreateZero(), 0);
+        AZ_Printf("Book", "--- STOP moving");
 
-        m_movePoints.AddDataPoint(GetLocalTM(), time);
+        m_movePoints.AddDataPoint(GetLocalTM().GetTranslation(), time);
     }
 }
 
-void CharacterTrackingComponent::OnTick(float, ScriptTimePoint)
+void CharacterTrackingComponent::OnTransformChanged(
+    const AZ::Transform&, const AZ::Transform& world)
 {
     if (NetQuery::IsEntityAuthoritative(GetEntityId()))
     {
         if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
         {
+            const auto diff = chunk->m_serverCheckpoint.Get().m_position - world.GetTranslation();
+            if (diff.GetLengthSq() < 0.1) return;
+
+            AZ_Printf("Book", "5. server movement check point (-- %f --) @ %d",
+                //static_cast<float>(world.GetTranslation().GetX()),
+                static_cast<float>(world.GetTranslation().GetY()),
+                //static_cast<float>(world.GetTranslation().GetZ()),
+                GetTime());
+
             chunk->m_serverCheckpoint.Set(
-                TransformWithTime(GetLocalTM(), GetTime()));
+                PositionInTime(world.GetTranslation(), GetTime()));
         }
     }
+}
+
+void CharacterTrackingComponent::OnTick(float deltaTime,
+    AZ::ScriptTimePoint time)
+{
+    const auto moveDirection = Vector3::CreateAxisY(m_speed);
+
+    EBUS_EVENT_ID(GetEntityId(),
+        LmbrCentral::CryCharacterPhysicsRequestBus,
+        RequestVelocity,
+        moveDirection, 0);
 }
 
 Transform CharacterTrackingComponent::GetLocalTM()
@@ -168,23 +249,27 @@ AZ::u32 CharacterTrackingComponent::GetTime()
     return m_chunk->GetReplicaManager()->GetTime().m_localTime;
 }
 
-bool CharacterTrackingComponent::Compare(
-    const AZ::Transform& one,
-    const AZ::Transform& two) const
+bool CharacterTrackingComponent::IsClose(
+    const AZ::Vector3& one, const AZ::Vector3& two) const
 {
-    const auto diff = one.GetTranslation() - two.GetTranslation();
+    const auto diff = one - two;
     return diff.GetLengthSq() < 0.1f;
 }
 
-bool CharacterTrackingComponent::TransformWithTime::operator==(
-    const TransformWithTime& another) const
+bool CharacterTrackingComponent::PositionInTime::operator==(
+    const PositionInTime& other) const
 {
-    return another.m_time == m_time &&
-        another.m_transform == m_transform;
+    return false;
 }
 
 void CharacterTrackingComponent::OnNewCheckpoint(
-    const TransformWithTime& value, const TimeContext &tc)
+    const PositionInTime& value, const GridMate::TimeContext& tc)
 {
-    OnCharacterMoveUpdate(value.m_transform, value.m_time);
+    if (NetQuery::IsEntityAuthoritative(GetEntityId())) return;
+
+    if (m_isActive)
+    {
+        AZ_Printf("Book", "6. check history");
+        OnCharacterMoveUpdate(value.m_position, value.m_time);
+    }
 }

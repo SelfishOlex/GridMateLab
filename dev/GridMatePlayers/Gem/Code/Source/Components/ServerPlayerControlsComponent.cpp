@@ -85,11 +85,9 @@ void ServerPlayerControls::Reflect(AZ::ReflectContext* reflection)
 
 void ServerPlayerControls::Activate()
 {
-    if (NetQuery::IsEntityAuthoritative(GetEntityId()))
-    {
-        TickBus::Handler::BusConnect();
-    }
-    else
+    TickBus::Handler::BusConnect();
+
+    if (!NetQuery::IsEntityAuthoritative(GetEntityId()))
     {
         PlayerControlsBus::Handler::BusConnect(GetEntityId());
     }
@@ -97,11 +95,9 @@ void ServerPlayerControls::Activate()
 
 void ServerPlayerControls::Deactivate()
 {
-    if (NetQuery::IsEntityAuthoritative(GetEntityId()))
-    {
-        TickBus::Handler::BusDisconnect();
-    }
-    else
+    TickBus::Handler::BusDisconnect();
+
+    if (!NetQuery::IsEntityAuthoritative(GetEntityId()))
     {
         PlayerControlsBus::Handler::BusDisconnect();
     }
@@ -142,7 +138,14 @@ AZ::u32 ServerPlayerControls::GetLocalTime() const
 void ServerPlayerControls::ForwardKeyUp()
 {
     if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
+    {
         chunk->m_stopForward();
+        AZ_Printf("Book", "1. stopping");
+
+        EBUS_EVENT_ID(GetEntityId(),
+            CharacterMovementRequestBus,
+            OnCharacterStop, GetLocalTime());
+    }
 }
 
 void ServerPlayerControls::ForwardKeyDown()
@@ -150,14 +153,11 @@ void ServerPlayerControls::ForwardKeyDown()
     if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
     {
         chunk->m_startForward();
+        AZ_Printf("Book", "1. move forward");
 
-        if (chunk->IsProxy())
-        {
-            EBUS_EVENT_ID(GetEntityId(),
-                CharacterMovementRequestBus,
-                OnCharacterMoveForward,
-                GetLocalTime());
-        }
+        EBUS_EVENT_ID(GetEntityId(),
+            CharacterMovementRequestBus,
+            OnCharacterMoveForward, m_speed, GetLocalTime());
     }
 }
 
@@ -166,14 +166,6 @@ void ServerPlayerControls::FireKeyUp()
     if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
     {
         chunk->m_fireCommand();
-
-        if (chunk->IsProxy())
-        {
-            EBUS_EVENT_ID(GetEntityId(),
-                CharacterMovementRequestBus,
-                OnCharacterStop,
-                GetLocalTime());
-        }
     }
 }
 
@@ -195,11 +187,7 @@ void ServerPlayerControls::OnTick(float deltaTime,
 bool ServerPlayerControls::OnStartForward(
     const GridMate::RpcContext& rc)
 {
-    EBUS_EVENT_ID(GetEntityId(),
-        CharacterMovementRequestBus,
-        OnCharacterMoveForward,
-        rc.m_timestamp);
-
+    AZ_Printf("Book", "3. move forward");
     m_movingForward = true;
     return false;
 }
@@ -207,11 +195,7 @@ bool ServerPlayerControls::OnStartForward(
 bool ServerPlayerControls::OnStopForward(
     const GridMate::RpcContext& rc)
 {
-    EBUS_EVENT_ID(GetEntityId(),
-        CharacterMovementRequestBus,
-        OnCharacterStop,
-        rc.m_timestamp);
-
+    AZ_Printf("Book", "3. stopping");
     m_movingForward = false;
     return false;
 }

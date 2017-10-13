@@ -17,7 +17,8 @@ namespace GridMatePlayers
             AZ::EBusAddressPolicy::ById;
         using BusIdType = AZ::EntityId;
 
-        virtual void OnCharacterMoveForward(AZ::u32 time) = 0;
+        virtual void OnCharacterMoveForward(
+            float speed, AZ::u32 time) = 0;
 
         virtual void OnCharacterStop(AZ::u32 time) = 0;
     };

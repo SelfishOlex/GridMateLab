@@ -7,15 +7,26 @@ namespace GridMatePlayers
     class MovementTrack
     {
     public:
-        void AddDataPoint(const AZ::Transform& t, AZ::u32 time);
-        AZ::Transform GetTransformAt(AZ::u32 time);
+        MovementTrack();
+
+        void AddDataPoint(const AZ::Vector3& t, AZ::u32 time);
+        AZ::Vector3 GetPositionAt(AZ::u32 time);
+        void DeleteAfter(AZ::u32 time);
 
     private:
         class DataPoint
         {
         public:
-            AZ::Transform m_position;
-            AZ::u32       m_time;
+            DataPoint(const AZ::Vector3& position, AZ::u32 time)
+                : m_position(position)
+                , m_time(time)
+            {
+            }
+
+            DataPoint() = default;
+
+            AZ::Vector3 m_position;
+            AZ::u32     m_time = 0;
         };
 
         AZStd::ring_buffer<DataPoint> m_points;
