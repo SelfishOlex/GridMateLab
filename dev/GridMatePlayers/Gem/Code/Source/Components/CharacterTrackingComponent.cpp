@@ -12,14 +12,11 @@ using namespace AzFramework;
 using namespace GridMate;
 using namespace GridMatePlayers;
 
-class CharacterTrackingComponent::Chunk
-    : public ReplicaChunk
+class CharacterTrackingComponent::Chunk : public ReplicaChunk
 {
 public:
     GM_CLASS_ALLOCATOR(Chunk);
-    Chunk()
-        : m_serverCheckpoint("Server Checkpoint") {}
-
+    Chunk() : m_serverCheckpoint("Server Checkpoint") {}
     bool IsReplicaMigratable() override { return true; }
 
     static const char* GetChunkName()
@@ -128,26 +125,23 @@ void CharacterTrackingComponent::OnCharacterStop(u32 time)
 void CharacterTrackingComponent::OnTransformChanged(
     const AZ::Transform&, const AZ::Transform& world)
 {
-    if (NetQuery::IsEntityAuthoritative(GetEntityId()))
+    if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
     {
-        if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
-        {
-            const auto diff = chunk->m_serverCheckpoint.Get()
-                .m_vector - world.GetTranslation();
-            if (diff.GetLengthSq() < m_allowedDeviation) return;
+        const auto diff =
+            chunk->m_serverCheckpoint.Get().m_vector -
+            world.GetTranslation();
+        if (diff.GetLengthSq() < m_allowedDeviation) return;
 
-            AZ_Printf("Book", "5. server (-- %f --) @ %d",
-                static_cast<float>(world.GetTranslation().GetY()),
-                GetTime());
+        AZ_Printf("Book", "5. server (-- %f --) @ %d",
+            static_cast<float>(world.GetTranslation().GetY()),
+            GetTime());
 
-            chunk->m_serverCheckpoint.Set(
-                { world.GetTranslation(), GetTime() });
-        }
+        chunk->m_serverCheckpoint.Set(
+            { world.GetTranslation(), GetTime() });
     }
 }
 
-void CharacterTrackingComponent::OnTick(float deltaTime,
-    AZ::ScriptTimePoint time)
+void CharacterTrackingComponent::OnTick(float, ScriptTimePoint)
 {
     EBUS_EVENT_ID(GetEntityId(),
         LmbrCentral::CryCharacterPhysicsRequestBus,
@@ -177,10 +171,9 @@ void CharacterTrackingComponent::OnNewServerCheckpoint(
     {
         AZ_Printf("Book", "6. check history");
         const auto& serverPosition = value.m_vector;
-
         const auto local = m_history.GetPositionAt(value.m_time);
-
         const auto diff = local - serverPosition;
+
         if (diff.GetLengthSq() > m_allowedDeviation)
         {
             EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus,
