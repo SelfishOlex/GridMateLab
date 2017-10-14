@@ -6,7 +6,7 @@
 #include <LmbrCentral/Physics/CryCharacterPhysicsBus.h>
 #include <GridMatePlayers/PlayerActionsBus.h>
 #include "AzCore/Component/TransformBus.h"
-#include "GridMatePlayers/CharacterMovementRequestBus.h"
+#include "GridMatePlayers/LocalPredictionRequestBus.h"
 #include "GridMate/Replica/ReplicaMgr.h"
 
 using namespace AZ;
@@ -141,10 +141,9 @@ void ServerPlayerControls::ForwardKeyUp()
     if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
     {
         chunk->m_stopForward();
-        AZ_Printf("Book", "1. stopping");
 
         EBUS_EVENT_ID(GetEntityId(),
-            CharacterMovementRequestBus,
+            LocalPredictionRequestBus,
             OnCharacterStop, GetLocalTime());
     }
 }
@@ -154,10 +153,9 @@ void ServerPlayerControls::ForwardKeyDown()
     if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
     {
         chunk->m_startForward();
-        AZ_Printf("Book", "1. move forward");
 
         EBUS_EVENT_ID(GetEntityId(),
-            CharacterMovementRequestBus,
+            LocalPredictionRequestBus,
             OnCharacterMoveForward, m_speed, GetLocalTime());
     }
 }
@@ -186,7 +184,6 @@ void ServerPlayerControls::OnTick(float deltaTime,
 bool ServerPlayerControls::OnStartForward(
     const GridMate::RpcContext& rc)
 {
-    AZ_Printf("Book", "3. move forward");
     m_movingForward = true;
     return false;
 }
@@ -194,7 +191,6 @@ bool ServerPlayerControls::OnStartForward(
 bool ServerPlayerControls::OnStopForward(
     const GridMate::RpcContext& rc)
 {
-    AZ_Printf("Book", "3. stopping");
     m_movingForward = false;
     return false;
 }

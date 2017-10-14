@@ -11,7 +11,7 @@
             "Include/GridMatePlayers/LocalClientBus.h",
             "Include/GridMatePlayers/GridMatePlayersBus.h",
             "Include/GridMatePlayers/PlayerActionsBus.h",
-            "Include/GridMatePlayers/CharacterMovementRequestBus.h",
+            "Include/GridMatePlayers/LocalPredictionRequestBus.h",
             "Include/GridMatePlayers/PlayerControlsBus.h"
         ],
         "Source": [

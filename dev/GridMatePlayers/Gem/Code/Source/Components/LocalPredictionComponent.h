@@ -2,7 +2,7 @@
 #include <AzCore/Component/Component.h>
 #include "AzFramework/Network/NetBindable.h"
 #include "Utils/MovementHistory.h"
-#include "GridMatePlayers/CharacterMovementRequestBus.h"
+#include "GridMatePlayers/LocalPredictionRequestBus.h"
 #include "AzCore/Component/TickBus.h"
 #include "AzCore/Component/TransformBus.h"
 #include "Utils/VectorInTime.h"
@@ -12,7 +12,7 @@ namespace GridMatePlayers
     class LocalPredictionComponent
         : public AZ::Component
         , public AzFramework::NetBindable
-        , public CharacterMovementRequestBus::Handler
+        , public LocalPredictionRequestBus::Handler
         , public AZ::TransformNotificationBus::Handler
         , public AZ::TickBus::Handler
     {

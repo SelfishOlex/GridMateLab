@@ -63,7 +63,7 @@ void LocalPredictionComponent::Reflect(ReflectContext* reflect)
 void LocalPredictionComponent::Activate()
 {
     const auto self = GetEntityId();
-    CharacterMovementRequestBus::Handler::BusConnect(self);
+    LocalPredictionRequestBus::Handler::BusConnect(self);
 
     if (NetQuery::IsEntityAuthoritative(GetEntityId()))
         TransformNotificationBus::Handler::BusConnect(self);
@@ -76,7 +76,7 @@ void LocalPredictionComponent::Activate()
 void LocalPredictionComponent::Deactivate()
 {
     m_isActive = false;
-    CharacterMovementRequestBus::Handler::BusDisconnect();
+    LocalPredictionRequestBus::Handler::BusDisconnect();
 
     if (NetQuery::IsEntityAuthoritative(GetEntityId()))
         TransformNotificationBus::Handler::BusDisconnect();

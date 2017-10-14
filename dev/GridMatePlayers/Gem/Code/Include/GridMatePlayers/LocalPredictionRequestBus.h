@@ -4,11 +4,11 @@
 
 namespace GridMatePlayers
 {
-    class CharacterMovementRequestInterface
+    class LocalPredictionRequestInterface
         : public AZ::EBusTraits
     {
     public:
-        virtual ~CharacterMovementRequestInterface() = default;
+        virtual ~LocalPredictionRequestInterface() = default;
 
         // EBusTraits overrides
         static const AZ::EBusHandlerPolicy HandlerPolicy =
@@ -23,6 +23,6 @@ namespace GridMatePlayers
         virtual void OnCharacterStop(AZ::u32 time) = 0;
     };
 
-    using CharacterMovementRequestBus =
-        AZ::EBus<CharacterMovementRequestInterface>;
+    using LocalPredictionRequestBus =
+        AZ::EBus<LocalPredictionRequestInterface>;
 }
