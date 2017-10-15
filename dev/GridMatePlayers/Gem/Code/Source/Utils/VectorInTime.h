@@ -1,6 +1,5 @@
 #pragma once
 #include "AzCore/Math/Vector3.h"
-#include "GridMate/Serialize/Buffer.h"
 #include "GridMate/Replica/DataSet.h"
 
 namespace GridMatePlayers

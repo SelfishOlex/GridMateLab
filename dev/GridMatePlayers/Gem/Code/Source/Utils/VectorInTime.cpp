@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "VectorInTime.h"
 #include <GridMate/Serialize/MathMarshal.h>
+#include "GridMate/Serialize/Buffer.h"
 
 using namespace AZ;
 using namespace GridMate;
@@ -47,5 +48,6 @@ VectorInTime::VectorInTime(const AZ::Vector3& v, AZ::u32 time)
 
 bool VectorInTime::operator==(const VectorInTime& other) const
 {
-    return false;
+    return (m_time == other.m_time) &&
+           (m_vector == other.m_vector);
 }

@@ -109,7 +109,7 @@ void LocalPredictionComponent::OnCharacterMoveForward(
 {
     m_movingForward = true;
     m_speed = speed;
-    AZ_Printf("Book", "2. forwad, local (-- %f --) @ %d",
+    AZ_Printf("Book", "forward, local (-- %f --) @ %d",
         static_cast<float>(GetPosition().GetY()), time);
     m_history.AddDataPoint(GetPosition(), time);
 }
@@ -118,7 +118,7 @@ void LocalPredictionComponent::OnCharacterStop(u32 time)
 {
     m_movingForward = false;
     m_speed = 0;
-    AZ_Printf("Book", "2. stopped, local (-- %f --) @ %d",
+    AZ_Printf("Book", "stopped, local (-- %f --) @ %d",
         static_cast<float>(GetPosition().GetY()), time);
     m_history.AddDataPoint(GetPosition(), time);
 }
@@ -133,7 +133,7 @@ void LocalPredictionComponent::OnTransformChanged(
             world.GetTranslation();
         if (diff.GetLengthSq() < m_allowedDeviation) return;
 
-        AZ_Printf("Book", "5. server (-- %f --) @ %d",
+        AZ_Printf("Book", "server (-- %f --) @ %d",
             static_cast<float>(world.GetTranslation().GetY()),
             GetTime());
 
@@ -170,7 +170,6 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
     if (m_isActive &&
         !NetQuery::IsEntityAuthoritative(GetEntityId()))
     {
-        AZ_Printf("Book", "6. check history");
         const auto& serverPosition = value.m_vector;
         const auto local = m_history.GetPositionAt(value.m_time);
         const auto diff = local - serverPosition;
