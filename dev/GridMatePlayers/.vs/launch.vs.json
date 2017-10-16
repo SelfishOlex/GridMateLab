@@ -7,7 +7,7 @@
             "project": "..\\Bin64vc140\\GridMatePlayersLauncher.exe",
             "name": "x64 Client",
             "args": [
-                ""
+                "+mpjoin"
             ]
         },
         {
@@ -15,7 +15,9 @@
             "project": "..\\Bin64vc140.Dedicated\\GridMatePlayersLauncher_Server.exe",
             "name": "x64 Dedicated",
             "args": [
-                "+map", "tutorial", "+mphost"
+                "+map",
+                "tutorial",
+                "+mphost"
             ]
         }
     ]

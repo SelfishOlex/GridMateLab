@@ -1,65 +1,81 @@
 {
   "version": "0.2.1",
-    "tasks": [
-        {
-            "appliesTo": "*",
-            "taskName": "Build Game",
-            "type": "default",
-            "workingDirectory": "${workspaceRoot}/..",
-            "command": "powershell",
-            "contextType": "build",
-            "args": [
-                "echo 'Building Client'; echo '';",
-                "cd ${workspaceRoot}/..; ./lmbr_waf build_win_x64_vs2015_profile -p game; ",
-                "echo ''; echo 'DONE!'"
-            ]
-        },
-        {
-            "appliesTo": "*",
-            "properties": {},
-            "taskName": "Build Dedicated Server",
-            "type": "launch",
-            "workingDirectory": "${workspaceRoot}/..",
-            "command": "powershell",
-            "contextType": "custom",
-            "args": [
-                "echo 'Building Dedicated Server'; echo '';",
-                "cd ${workspaceRoot}/..; ./lmbr_waf build_win_x64_vs2015_profile_dedicated -p game; ",
-                "echo ''; echo 'DONE!'"
-            ]
-        },
-        {
-            "appliesTo": "*",
-            "properties": {},
-            "taskName": "Build All",
-            "type": "launch",
-            "workingDirectory": "${workspaceRoot}/..",
-            "command": "powershell",
-            "contextType": "custom",
-            "args": [
-                "cd ${workspaceRoot}/..;",
-                " echo 'Building Client'; echo ''; ",
-                "./lmbr_waf build_win_x64_vs2015_profile -p game; echo ''; ",
-                "echo 'Building Server'; echo ''; ./lmbr_waf build_win_x64_vs2015_profile_dedicated -p game; ",
-                "echo ''; echo 'DONE!'"
-            ]
-        },
-        {
-            "appliesTo": "*",
-            "properties": {},
-            "taskName": "Unit Tests",
-            "type": "launch",
-            "workingDirectory": "${workspaceRoot}/..",
-            "command": "powershell",
-            "contextType": "custom",
-            "args": [
-                "cd ${workspaceRoot}/..;",
-                "echo 'Building Tests'; echo ''; ",
-                "./lmbr_waf build_win_x64_vs2015_debug_test -p game; echo ''; ",
-                "echo 'Running Tests'; echo ''; ",
-                "./Bin64vc140.Debug.Test/AzTestRunner.exe ./Bin64vc140.Debug.Test/Gem.GridMatePlayers.83176372815649969d9127938273d9ad.v0.1.0.dll AzRunUnitTests; ",
-                "echo ''; echo 'DONE!'"
-            ]
-        }
-    ]
+  "tasks": [
+    {
+      "appliesTo": "*",
+      "taskName": "Build Game",
+      "type": "default",
+      "workingDirectory": "${workspaceRoot}/..",
+      "command": "powershell",
+      "contextType": "build",
+      "args": [
+        "echo 'Building Client'; echo '';",
+        "cd ${workspaceRoot}/..; ./lmbr_waf build_win_x64_vs2015_profile -p game; ",
+        "echo ''; echo 'DONE!'"
+      ]
+    },
+    {
+      "appliesTo": "*",
+      "properties": {},
+      "taskName": "Build Dedicated Server",
+      "type": "launch",
+      "workingDirectory": "${workspaceRoot}/..",
+      "command": "powershell",
+      "contextType": "custom",
+      "args": [
+        "echo 'Building Dedicated Server'; echo '';",
+        "cd ${workspaceRoot}/..; ./lmbr_waf build_win_x64_vs2015_profile_dedicated -p game; ",
+        "echo ''; echo 'DONE!'"
+      ]
+    },
+    {
+      "appliesTo": "*",
+      "properties": {},
+      "taskName": "Build All",
+      "type": "launch",
+      "workingDirectory": "${workspaceRoot}/..",
+      "command": "powershell",
+      "contextType": "custom",
+      "args": [
+        "cd ${workspaceRoot}/..;",
+        " echo 'Building Client'; echo ''; ",
+        "./lmbr_waf build_win_x64_vs2015_profile -p game; echo ''; ",
+        "echo 'Building Server'; echo ''; ./lmbr_waf build_win_x64_vs2015_profile_dedicated -p game; ",
+        "echo ''; echo 'DONE!'"
+      ]
+    },
+    {
+      "appliesTo": "*",
+      "properties": {},
+      "taskName": "Unit Tests",
+      "type": "launch",
+      "workingDirectory": "${workspaceRoot}/..",
+      "command": "powershell",
+      "contextType": "custom",
+      "args": [
+        "cd ${workspaceRoot}/..;",
+        "echo 'Building Tests'; echo ''; ",
+        "./lmbr_waf build_win_x64_vs2015_debug_test -p game; echo ''; ",
+        "echo 'Running Tests'; echo ''; ",
+        "./Bin64vc140.Debug.Test/AzTestRunner.exe ./Bin64vc140.Debug.Test/Gem.GridMatePlayers.83176372815649969d9127938273d9ad.v0.1.0.dll AzRunUnitTests; ",
+        "echo ''; echo 'DONE!'"
+      ]
+    },
+    {
+      "appliesTo": "*",
+      "properties": {},
+      "taskName": "Laggy Scenario: Server and Client",
+      "type": "launch",
+      "workingDirectory": "${workspaceRoot}/..",
+      "command": "powershell",
+      "contextType": "custom",
+      "args": [
+        "cd ${workspaceRoot}/..;",
+        "echo 'Starting Server...'; echo ''; ",
+        "./Bin64vc140.Dedicated\\GridMatePlayersLauncher_Server.exe +gm_net_simulator oLatMin:600 oLatMax:1000 +gm_disconnectDetection 0 +map tutorial +mphost; echo ''; ",
+        "echo 'Starting Client...'; echo ''; ",
+        "./Bin64vc140\\GridMatePlayersLauncher.exe +mpjoin; "
+      ]
+    }
+  ]
 }
