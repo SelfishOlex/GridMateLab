@@ -12,7 +12,7 @@ using namespace AzFramework;
 using namespace GridMate;
 using namespace GridMatePlayers;
 
-void ServerPlayerSpawner::Reflect(ReflectContext* context)
+void ServerPlayerSpawner::Reflect(AZ::ReflectContext* context)
 {
     if (auto sc = azrtti_cast<SerializeContext*>(context))
     {

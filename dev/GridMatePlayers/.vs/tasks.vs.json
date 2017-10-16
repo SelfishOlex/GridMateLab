@@ -2,20 +2,20 @@
   "version": "0.2.1",
     "tasks": [
         {
-            "appliesTo": "/",
-            "properties": {},
-            "taskLabel": "Build",
+            "appliesTo": "*",
             "taskName": "Build Game",
             "type": "default",
             "workingDirectory": "${workspaceRoot}/..",
             "command": "powershell",
             "contextType": "build",
             "args": [
-                "cd ${workspaceRoot}/..; ./lmbr_waf build_win_x64_vs2015_profile -p game"
+                "echo 'Building Client'; echo '';",
+                "cd ${workspaceRoot}/..; ./lmbr_waf build_win_x64_vs2015_profile -p game; ",
+                "echo ''; echo 'DONE!'"
             ]
         },
         {
-            "appliesTo": "/",
+            "appliesTo": "*",
             "properties": {},
             "taskName": "Build Dedicated Server",
             "type": "launch",
@@ -23,7 +23,25 @@
             "command": "powershell",
             "contextType": "custom",
             "args": [
-                "cd ${workspaceRoot}/..; ./lmbr_waf build_win_x64_vs2015_profile_dedicated -p game"
+                "echo 'Building Dedicated Server'; echo '';",
+                "cd ${workspaceRoot}/..; ./lmbr_waf build_win_x64_vs2015_profile_dedicated -p game; ",
+                "echo ''; echo 'DONE!'"
+            ]
+        },
+        {
+            "appliesTo": "*",
+            "properties": {},
+            "taskName": "Build All",
+            "type": "launch",
+            "workingDirectory": "${workspaceRoot}/..",
+            "command": "powershell",
+            "contextType": "custom",
+            "args": [
+                "cd ${workspaceRoot}/..;",
+                " echo 'Building Client'; echo ''; ",
+                "./lmbr_waf build_win_x64_vs2015_profile -p game; echo ''; ",
+                "echo 'Building Server'; echo ''; ./lmbr_waf build_win_x64_vs2015_profile_dedicated -p game; ",
+                "echo ''; echo 'DONE!'"
             ]
         }
     ]
