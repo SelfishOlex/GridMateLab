@@ -1,0 +1,30 @@
+{
+  "version": "0.2.1",
+    "tasks": [
+        {
+            "appliesTo": "/",
+            "properties": {},
+            "taskLabel": "Build",
+            "taskName": "Build Game",
+            "type": "default",
+            "workingDirectory": "${workspaceRoot}/..",
+            "command": "powershell",
+            "contextType": "build",
+            "args": [
+                "cd ${workspaceRoot}/..; ./lmbr_waf build_win_x64_vs2015_profile -p game"
+            ]
+        },
+        {
+            "appliesTo": "/",
+            "properties": {},
+            "taskName": "Build Dedicated Server",
+            "type": "launch",
+            "workingDirectory": "${workspaceRoot}/..",
+            "command": "powershell",
+            "contextType": "custom",
+            "args": [
+                "cd ${workspaceRoot}/..; ./lmbr_waf build_win_x64_vs2015_profile_dedicated -p game"
+            ]
+        }
+    ]
+}

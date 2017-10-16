@@ -3,6 +3,7 @@
 #include <GridMate/Replica/ReplicaCommon.h>
 #include <AzFramework/Network/NetBindable.h>
 #include <GridMatePlayers/ServerPlayerBodyBus.h>
+#include <GridMate/Session/Session.h>
 
 namespace GridMatePlayers
 {

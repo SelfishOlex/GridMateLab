@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "name": "Windows x64",
+            "includePath": [
+                // Lumberyard
+                "${workspaceRoot}\\..\\Code\\Framework\\AzCore",
+                "${workspaceRoot}\\..\\Code\\Framework\\AzFramework",
+                "${workspaceRoot}\\..\\Code\\Framework\\GridMate",
+                "${workspaceRoot}\\Gem\\Code\\Source",
+                "${workspaceRoot}\\..\\Code\\CryEngine\\CryCommon",
+                "${workspaceRoot}\\..\\Gems\\LmbrCentral\\Code\\include",
+                "${workspaceRoot}\\Gem\\Code\\Include"
+            ],
+            "compilerSwitches": "/std:c++14",
+            "intelliSenseMode": "msvc-x64",
+            "forcedInclude": [ "StdAfx.h" ],
+            "undefines": []
+        }
+    ]
+}
