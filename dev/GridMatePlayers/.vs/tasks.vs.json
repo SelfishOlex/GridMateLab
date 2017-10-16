@@ -43,6 +43,23 @@
                 "echo 'Building Server'; echo ''; ./lmbr_waf build_win_x64_vs2015_profile_dedicated -p game; ",
                 "echo ''; echo 'DONE!'"
             ]
+        },
+        {
+            "appliesTo": "*",
+            "properties": {},
+            "taskName": "Unit Tests",
+            "type": "launch",
+            "workingDirectory": "${workspaceRoot}/..",
+            "command": "powershell",
+            "contextType": "custom",
+            "args": [
+                "cd ${workspaceRoot}/..;",
+                "echo 'Building Tests'; echo ''; ",
+                "./lmbr_waf build_win_x64_vs2015_debug_test -p game; echo ''; ",
+                "echo 'Running Tests'; echo ''; ",
+                "./Bin64vc140.Debug.Test/AzTestRunner.exe ./Bin64vc140.Debug.Test/Gem.GridMatePlayers.83176372815649969d9127938273d9ad.v0.1.0.dll AzRunUnitTests; ",
+                "echo ''; echo 'DONE!'"
+            ]
         }
     ]
 }

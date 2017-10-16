@@ -4,7 +4,7 @@
 #include <AzTest/AzTest.h>
 #include "AzCore/Memory/SystemAllocator.h"
 #include "AzCore/std/smart_ptr/unique_ptr.h"
-#include "Utils/MovementTrack.h"
+#include "Utils/MovementHistory.h"
 
 using namespace AZ;
 using namespace GridMatePlayers;
@@ -16,7 +16,7 @@ protected:
     void SetUp() override
     {
         AllocatorInstance<SystemAllocator>::Create();
-        track = AZStd::make_unique<MovementTrack>();
+        track = AZStd::make_unique<MovementHistory>();
     }
 
     void TearDown() override
@@ -25,10 +25,10 @@ protected:
         AllocatorInstance<SystemAllocator>::Destroy();
     }
 
-    AZStd::unique_ptr<MovementTrack> track;
+    AZStd::unique_ptr<MovementHistory> track;
 };
 
-TEST_F(GridMatePlayersTest, MovementTrack_Empty)
+TEST_F(GridMatePlayersTest, MovementHistory_Empty)
 {
     auto t = track->GetPositionAt(10);
     ASSERT_EQ((float)t.GetX(), 0);
@@ -38,7 +38,7 @@ TEST_F(GridMatePlayersTest, MovementTrack_Empty)
     track->AddDataPoint(Vector3::CreateAxisX(5), 10);
 }
 
-TEST_F(GridMatePlayersTest, MovementTrack_One)
+TEST_F(GridMatePlayersTest, MovementHistory_One)
 {
     track->AddDataPoint(Vector3::CreateAxisX(5), 10);
 
@@ -48,7 +48,7 @@ TEST_F(GridMatePlayersTest, MovementTrack_One)
     ASSERT_EQ((float)t.GetZ(), 0);
 }
 
-TEST_F(GridMatePlayersTest, MovementTrack_OnSecond)
+TEST_F(GridMatePlayersTest, MovementHistory_OnSecond)
 {
     track->AddDataPoint(Vector3::CreateAxisX(0), 0);
     track->AddDataPoint(Vector3::CreateAxisX(5), 10);
@@ -59,7 +59,7 @@ TEST_F(GridMatePlayersTest, MovementTrack_OnSecond)
     ASSERT_EQ((float)t.GetZ(), 0);
 }
 
-TEST_F(GridMatePlayersTest, MovementTrack_OnFirst)
+TEST_F(GridMatePlayersTest, MovementHistory_OnFirst)
 {
     track->AddDataPoint(Vector3::CreateAxisX(0), 0);
     track->AddDataPoint(Vector3::CreateAxisX(5), 10);
@@ -70,7 +70,7 @@ TEST_F(GridMatePlayersTest, MovementTrack_OnFirst)
     ASSERT_EQ((float)t.GetZ(), 0);
 }
 
-TEST_F(GridMatePlayersTest, MovementTrack_InTheMiddle)
+TEST_F(GridMatePlayersTest, MovementHistory_InTheMiddle)
 {
     track->AddDataPoint(Vector3::CreateAxisX(0), 0);
     track->AddDataPoint(Vector3::CreateAxisX(10), 10);
@@ -81,7 +81,7 @@ TEST_F(GridMatePlayersTest, MovementTrack_InTheMiddle)
     ASSERT_EQ((float)t.GetZ(), 0);
 }
 
-TEST_F(GridMatePlayersTest, MovementTrack_InFuture)
+TEST_F(GridMatePlayersTest, MovementHistory_InFuture)
 {
     track->AddDataPoint(Vector3::CreateAxisX(0), 0);
     track->AddDataPoint(Vector3::CreateAxisX(10), 10);
@@ -92,7 +92,7 @@ TEST_F(GridMatePlayersTest, MovementTrack_InFuture)
     ASSERT_EQ((float)t.GetZ(), 0);
 }
 
-TEST_F(GridMatePlayersTest, MovementTrack_InThePast)
+TEST_F(GridMatePlayersTest, MovementHistory_InThePast)
 {
     track->AddDataPoint(Vector3::CreateAxisX(100), 100);
     track->AddDataPoint(Vector3::CreateAxisX(200), 200);
