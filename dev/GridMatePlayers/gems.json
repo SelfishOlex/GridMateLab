@@ -8,6 +8,12 @@
             "_comment": "PBSreferenceMaterials"
         },
         {
+            "Path": "Gems/WindowPosition",
+            "Uuid": "081922bcf58844ef887a1b6b3574240a",
+            "Version": "0.1.0",
+            "_comment": "WindowPosition"
+        },
+        {
             "Path": "Gems/AWS",
             "Uuid": "0945e21b7ae848ac80b4ec1f34c459cc",
             "Version": "0.1.0",

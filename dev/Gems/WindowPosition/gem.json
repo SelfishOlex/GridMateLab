@@ -1,0 +1,15 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "081922bcf58844ef887a1b6b3574240a",
+    "Name": "WindowPosition",
+    "DisplayName": "WindowPosition",
+    "Version": "0.1.0",
+    "Summary": "Provides console commands to position your window: 'windowx {X}', 'windowy {Y}' and 'windowxy {X} {Y}'. X and Y values are left and top distance from the top left corner of your screen in pixels.",
+    "Tags": ["window"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        }
+    ]
+}
