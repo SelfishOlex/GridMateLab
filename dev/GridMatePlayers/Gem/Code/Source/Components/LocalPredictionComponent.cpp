@@ -182,6 +182,10 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
 
             m_history.DeleteAfter(value.m_time);
             m_history.AddDataPoint(serverPosition, value.m_time);
+
+            AZ_Printf("Book", "correction (-- %f --) @%d",
+                static_cast<float>(value.m_vector.GetY()),
+                value.m_time);
         }
     }
 }
