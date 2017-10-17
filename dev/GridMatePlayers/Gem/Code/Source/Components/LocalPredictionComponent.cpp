@@ -38,9 +38,7 @@ void LocalPredictionComponent::Reflect(ReflectContext* reflect)
         sc->Class<LocalPredictionComponent, Component>()
             ->Version(1)
             ->Field("Allowed Deviation",
-                &LocalPredictionComponent::m_allowedDeviation)
-            ->Field("Rollback Ratio",
-                &LocalPredictionComponent::m_rollbackRatio);
+                &LocalPredictionComponent::m_allowedDeviation);
 
         if (auto ec = sc->GetEditContext())
         {
@@ -56,11 +54,7 @@ void LocalPredictionComponent::Reflect(ReflectContext* reflect)
                     AZ_CRC("Game"))
                 ->DataElement(nullptr,
                     &LocalPredictionComponent::m_allowedDeviation,
-                    "Allowed Deviation", "")
-                ->DataElement(nullptr,
-                    &LocalPredictionComponent::m_rollbackRatio,
-                    "Rollback Ratio", "")
-            ;
+                    "Allowed Deviation", "");
         }
     }
 
@@ -147,13 +141,13 @@ void LocalPredictionComponent::OnTransformChanged(
 
         AZ_Printf("Book", "server (-- %f --) @ %d",
             static_cast<float>(world.GetTranslation().GetY()),
-            GetTime());
+            GetLocalTime());
 
         chunk->m_serverCheckpoint.Set(
-            { world.GetTranslation(), GetTime() });
+            { world.GetTranslation(), GetLocalTime() });
 
         EBUS_EVENT_ID(GetEntityId(), ServerPredictionRequestBus,
-            OnCharacterMoved, world.GetTranslation(), GetTime());
+            OnCharacterMoved, world.GetTranslation(), GetLocalTime());
     }
 }
 
@@ -173,7 +167,7 @@ Vector3 LocalPredictionComponent::GetPosition() const
     return t.GetTranslation();
 }
 
-AZ::u32 LocalPredictionComponent::GetTime() const
+AZ::u32 LocalPredictionComponent::GetLocalTime() const
 {
     if (!m_chunk) return 0;
     return m_chunk->GetReplicaManager()->GetTime().m_localTime;
@@ -185,47 +179,44 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
     if (m_isActive &&
         !NetQuery::IsEntityAuthoritative(GetEntityId()))
     {
+        const auto& serverPos = value.m_vector;
+        const auto serverTime = value.m_time
+            - (GetLocalTime() - value.m_time);
+
         if (m_history.HasHistory())
         {
-            const auto& serverPos = value.m_vector;
-            const auto serverTime = value.m_time;
             const auto backThen =
                 m_history.GetPositionAt(serverTime);
-            const float diff = (backThen - serverPos).GetLength();
+            const auto diff = backThen - serverPos;
 
-            if (diff > m_allowedDeviation)
+            if (diff.GetLength() > m_allowedDeviation)
             {
                 auto now = AZ::Transform::CreateIdentity();
                 EBUS_EVENT_ID_RESULT(now, GetEntityId(),
                     AZ::TransformBus, GetWorldTM);
 
-                m_history.DeleteAfter(value.m_time);
-                m_history.AddDataPoint(serverPos, value.m_time);
+                const auto adjusted = now.GetTranslation() - diff;
 
-                // adjust current position based on the difference
-                const auto adjusted = now.GetTranslation() -
-                    (backThen - serverPos) * m_rollbackRatio;
-
-                m_history.AddDataPoint(adjusted, GetTime());
+                m_history.DeleteAfter(serverTime);
+                m_history.AddDataPoint(serverPos, serverTime);
+                m_history.AddDataPoint(adjusted, GetLocalTime());
 
                 EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus,
                     SetWorldTM,
                     Transform::CreateTranslation(adjusted));
 
-                AZ_Printf("Book", "rollback (-- %f --) @%d; dv %f"
-                    "so now (-- %f --) @%d",
-                    static_cast<float>(value.m_vector.GetY()),
-                    value.m_time,
-                    diff, static_cast<float>(adjusted.GetY()),
-                    GetTime());
+                AZ_Printf("Book", "new (-- %f --) @%d; dv %f",
+                    static_cast<float>(adjusted.GetY()),
+                    GetLocalTime(),
+                    static_cast<float>(diff.GetY()));
             }
         }
         else
         {
-            m_history.AddDataPoint(value.m_vector, value.m_time);
+            m_history.AddDataPoint(serverPos, serverTime);
             EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus,
                 SetWorldTM,
-                Transform::CreateTranslation(value.m_vector));
+                Transform::CreateTranslation(serverPos));
         }
     }
 }
