@@ -76,7 +76,7 @@ void ServerPlayerSpawner::OnMemberJoined(
         LmbrCentral::SpawnerComponentRequestBus,
         SpawnRelative, t);
 
-    m_spawningPlayer = playerId;
+    m_joiningplayers[ticket] = playerId;
     SliceInstantiationResultBus::MultiHandler::BusConnect(
         ticket);
 }
@@ -85,15 +85,21 @@ void ServerPlayerSpawner::OnSliceInstantiated(
     const AZ::Data::AssetId&,
     const SliceComponent::SliceInstanceAddress& address)
 {
-    // TODO support clients joining at the same time
-
-    SliceInstantiationResultBus::MultiHandler::BusDisconnect();
-    for (auto& entity : address.second->
-        GetInstantiated()->m_entities)
+    const auto& ticket =
+        *SliceInstantiationResultBus::GetCurrentBusId();
+    const auto iter = m_joiningplayers.find(ticket);
+    if (iter != m_joiningplayers.end())
     {
-        EBUS_EVENT_ID(entity->GetId(), ServerPlayerBodyBus,
-            SetAssociatedPlayerId, m_spawningPlayer);
-    }
+        const auto playerId = iter->second;
+        SliceInstantiationResultBus::MultiHandler::BusDisconnect(
+            ticket);
 
-    m_spawningPlayer = 0;
+        for (auto& entity : address.second->
+            GetInstantiated()->m_entities)
+        {
+            EBUS_EVENT_ID(entity->GetId(), ServerPlayerBodyBus,
+                SetAssociatedPlayerId, playerId);
+        }
+    }
+    m_joiningplayers.erase(iter);
 }

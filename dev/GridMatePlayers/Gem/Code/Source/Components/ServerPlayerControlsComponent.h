@@ -35,8 +35,10 @@ namespace GridMatePlayers
             AZ::ScriptTimePoint time) override;
 
         // RPC callbacks
-        bool OnStartForward(const GridMate::RpcContext& rc);
-        bool OnStopForward(const GridMate::RpcContext& rc);
+        bool OnStartForward(AZ::u32 clientTime,
+            const GridMate::RpcContext& rc);
+        bool OnStopForward(AZ::u32 clientTime,
+            const GridMate::RpcContext& rc);
         bool OnFireCommand(const GridMate::RpcContext& rc);
 
         // NetBindable

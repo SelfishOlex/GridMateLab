@@ -108,7 +108,7 @@
             "args": [
                 "cd ${workspaceRoot}/..;",
                 "echo 'Starting Server...'; echo ''; ",
-                "./Bin64vc140.Dedicated/GridMatePlayersLauncher_Server.exe +gm_net_simulator oLatMin:600 oLatMax:1000 +gm_disconnectDetection 0 +map tutorial +mphost; echo ''; ",
+                "./Bin64vc140.Dedicated/GridMatePlayersLauncher_Server.exe +gm_net_simulator oLatMin:150 oLatMax:150 +gm_disconnectDetection 0 +map tutorial +mphost; echo ''; ",
                 "echo 'Starting the only Client...'; echo ''; ",
                 "./Bin64vc140\\GridMatePlayersLauncher.exe +windowxy 620 250 +mpjoin; echo '';"
             ]

@@ -12,6 +12,7 @@
             "Include/GridMatePlayers/GridMatePlayersBus.h",
             "Include/GridMatePlayers/PlayerActionsBus.h",
             "Include/GridMatePlayers/LocalPredictionRequestBus.h",
+            "Include/GridMatePlayers/ServerPredictionRequestBus.h",
             "Include/GridMatePlayers/PlayerControlsBus.h"
         ],
         "Source": [
@@ -40,6 +41,8 @@
             "Source/Components/ServerPlayerControlsComponent.h",
             "Source/Components/ServerPlayerSpawner.cpp",
             "Source/Components/ServerPlayerSpawner.h",
+            "Source/Components/ServerPredictionComponent.cpp",
+            "Source/Components/ServerPredictionComponent.h",
             "Source/Components/TimedProjectileComponent.cpp",
             "Source/Components/TimedProjectileComponent.h"
         ]

@@ -7,14 +7,15 @@
 #include "GridMatePlayersSystemComponent.h"
 
 #include <IGem.h>
-#include "Components/InputCaptureComponent.h"
-#include "Components/TimedProjectileComponent.h"
-#include "Components/PebbleSpawnerComponent.h"
-#include "Components/LocalClientComponent.h"
-#include "Components/ServerAuthPlayerComponent.h"
-#include "Components/ServerPlayerSpawner.h"
-#include "Components/ServerPlayerControlsComponent.h"
-#include "Components/LocalPredictionComponent.h"
+#include <Components/InputCaptureComponent.h>
+#include <Components/TimedProjectileComponent.h>
+#include <Components/PebbleSpawnerComponent.h>
+#include <Components/LocalClientComponent.h>
+#include <Components/ServerAuthPlayerComponent.h>
+#include <Components/ServerPlayerSpawner.h>
+#include <Components/ServerPlayerControlsComponent.h>
+#include <Components/LocalPredictionComponent.h>
+#include <Components/ServerPredictionComponent.h>
 
 namespace GridMatePlayers
 {
@@ -39,6 +40,7 @@ namespace GridMatePlayers
                 LocalClientComponent::CreateDescriptor(),
                 ServerPlayerControls::CreateDescriptor(),
                 LocalPredictionComponent::CreateDescriptor(),
+                ServerPredictionComponent::CreateDescriptor(),
             });
         }
 

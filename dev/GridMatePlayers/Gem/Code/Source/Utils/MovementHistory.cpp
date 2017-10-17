@@ -54,3 +54,13 @@ void MovementHistory::DeleteAfter(AZ::u32 time)
             break;
     }
 }
+
+void MovementHistory::DeleteAll()
+{
+    m_points.clear();
+}
+
+bool MovementHistory::HasHistory() const
+{
+    return m_points.size() > 0;
+}

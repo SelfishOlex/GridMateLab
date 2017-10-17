@@ -103,4 +103,15 @@ TEST_F(GridMatePlayersTest, MovementHistory_InThePast)
     ASSERT_EQ((float)t.GetZ(), 0);
 }
 
+TEST_F(GridMatePlayersTest, MovementHistory_DeleteAll)
+{
+    track->AddDataPoint(Vector3::CreateAxisX(100), 100);
+    track->DeleteAll();
+
+    auto t = track->GetPositionAt(0);
+    ASSERT_EQ((float)t.GetX(), 0);
+    ASSERT_EQ((float)t.GetY(), 0);
+    ASSERT_EQ((float)t.GetZ(), 0);
+}
+
 AZ_UNIT_TEST_HOOK();

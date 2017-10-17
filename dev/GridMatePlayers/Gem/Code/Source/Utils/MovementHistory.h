@@ -12,6 +12,8 @@ namespace GridMatePlayers
         void AddDataPoint(const AZ::Vector3& t, AZ::u32 time);
         AZ::Vector3 GetPositionAt(AZ::u32 time);
         void DeleteAfter(AZ::u32 time);
+        void DeleteAll();
+        bool HasHistory() const;
 
     private:
         class DataPoint
