@@ -41,8 +41,6 @@
             "Source/Components/ServerPlayerControlsComponent.h",
             "Source/Components/ServerPlayerSpawner.cpp",
             "Source/Components/ServerPlayerSpawner.h",
-            "Source/Components/ServerPredictionComponent.cpp",
-            "Source/Components/ServerPredictionComponent.h",
             "Source/Components/TimedProjectileComponent.cpp",
             "Source/Components/TimedProjectileComponent.h"
         ]

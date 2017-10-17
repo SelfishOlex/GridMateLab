@@ -8,7 +8,6 @@
 #include <AzCore/Component/TransformBus.h>
 #include <GridMatePlayers/LocalPredictionRequestBus.h>
 #include <GridMate/Replica/ReplicaMgr.h>
-#include <GridMatePlayers/ServerPredictionRequestBus.h>
 
 using namespace AZ;
 using namespace AzFramework;
@@ -33,12 +32,12 @@ public:
 
     bool IsReplicaMigratable() override { return true; }
 
-    GridMate::Rpc<RpcArg<u32>>::BindInterface<
+    GridMate::Rpc<>::BindInterface<
         ServerPlayerControls,
         &ServerPlayerControls::OnStartForward>
         m_startForward;
 
-    GridMate::Rpc<RpcArg<u32>>::BindInterface<
+    GridMate::Rpc<>::BindInterface<
         ServerPlayerControls,
         &ServerPlayerControls::OnStopForward>
         m_stopForward;
@@ -141,7 +140,7 @@ void ServerPlayerControls::ForwardKeyUp()
 {
     if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
     {
-        chunk->m_stopForward(GetLocalTime());
+        chunk->m_stopForward();
 
         EBUS_EVENT_ID(GetEntityId(),
             LocalPredictionRequestBus,
@@ -153,7 +152,7 @@ void ServerPlayerControls::ForwardKeyDown()
 {
     if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
     {
-        chunk->m_startForward(GetLocalTime());
+        chunk->m_startForward();
 
         EBUS_EVENT_ID(GetEntityId(),
             LocalPredictionRequestBus,
@@ -183,28 +182,15 @@ void ServerPlayerControls::OnTick(float deltaTime,
 }
 
 bool ServerPlayerControls::OnStartForward(
-    AZ::u32 clientTime,
     const GridMate::RpcContext& rc)
 {
-    EBUS_EVENT_ID(GetEntityId(),
-        ServerPredictionRequestBus,
-        OnCharacterMoveForward,
-        Vector3::CreateAxisY(m_speed),
-        clientTime, GetLocalTime());
-
     m_movingForward = true;
     return false;
 }
 
 bool ServerPlayerControls::OnStopForward(
-    AZ::u32 clientTime,
     const GridMate::RpcContext& rc)
 {
-    EBUS_EVENT_ID(GetEntityId(),
-        ServerPredictionRequestBus,
-        OnCharacterStop,
-        clientTime, GetLocalTime());
-
     m_movingForward = false;
     return false;
 }

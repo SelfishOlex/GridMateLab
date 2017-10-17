@@ -6,7 +6,6 @@
 #include "AzCore/Component/TransformBus.h"
 #include "GridMate/Replica/ReplicaMgr.h"
 #include "LmbrCentral/Physics/CryCharacterPhysicsBus.h"
-#include <GridMatePlayers/ServerPredictionRequestBus.h>
 
 using namespace AZ;
 using namespace AzFramework;
@@ -145,9 +144,6 @@ void LocalPredictionComponent::OnTransformChanged(
 
         chunk->m_serverCheckpoint.Set(
             { world.GetTranslation(), GetLocalTime() });
-
-        EBUS_EVENT_ID(GetEntityId(), ServerPredictionRequestBus,
-            OnCharacterMoved, world.GetTranslation(), GetLocalTime());
     }
 }
 
