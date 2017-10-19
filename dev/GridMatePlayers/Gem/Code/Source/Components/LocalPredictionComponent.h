@@ -50,7 +50,7 @@ namespace GridMatePlayers
             const GridMate::TimeContext &tc);
 
         AZ::Vector3 GetPosition() const;
-        AZ::u32 GetLocalTime() const;
+        AZ::u32 GetTime() const;
 
     private:
         class Chunk;

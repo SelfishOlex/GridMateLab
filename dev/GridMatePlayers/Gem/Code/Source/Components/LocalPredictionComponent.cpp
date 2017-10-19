@@ -140,11 +140,11 @@ void LocalPredictionComponent::OnTransformChanged(
         {
             AZ_Printf("Book", "server (-- %f --) @ %d",
                 static_cast<float>(world.GetTranslation().GetY()),
-                GetLocalTime());
+                GetTime());
         }
 
         chunk->m_serverCheckpoint.Set(
-            { world.GetTranslation(), GetLocalTime() });
+            { world.GetTranslation(), GetTime() });
     }
 }
 
@@ -165,7 +165,7 @@ Vector3 LocalPredictionComponent::GetPosition() const
     return v;
 }
 
-AZ::u32 LocalPredictionComponent::GetLocalTime() const
+AZ::u32 LocalPredictionComponent::GetTime() const
 {
     AZ::u32 t = 0;
     EBUS_EVENT_RESULT(t, GridMatePlayersRequestBus, GetLocalTime);
@@ -204,7 +204,7 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
 
                 AZ_Printf("Book", "new (-- %f --) @%d; dv %f",
                     static_cast<float>(adjusted.GetY()),
-                    GetLocalTime(),
+                    GetTime(),
                     static_cast<float>(diff.GetY()));
             }
         }
