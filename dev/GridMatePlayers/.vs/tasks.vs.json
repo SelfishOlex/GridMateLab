@@ -64,7 +64,7 @@
         {
             "appliesTo": "*",
             "properties": {},
-            "taskName": "Laggy Scenario: Server and 2 Clients",
+            "taskName": "Laggy 150ms: Server and 2 Clients",
             "type": "launch",
             "workingDirectory": "${workspaceRoot}/..",
             "command": "powershell",
@@ -72,7 +72,7 @@
             "args": [
                 "cd ${workspaceRoot}/..;",
                 "echo 'Starting Server...'; echo ''; ",
-                "./Bin64vc140.Dedicated\\GridMatePlayersLauncher_Server.exe +gm_net_simulator oLatMin:0 oLatMax:0 +gm_disconnectDetection 0 +map tutorial +mphost; echo ''; ",
+                "./Bin64vc140.Dedicated\\GridMatePlayersLauncher_Server.exe +gm_net_simulator oLatMin:150 oLatMax:150 +gm_disconnectDetection 0 +map tutorial +mphost; echo ''; ",
                 "echo 'Starting first Client...'; echo ''; ",
                 "./Bin64vc140\\GridMatePlayersLauncher.exe +windowxy 0 0 +mpjoin;",
                 "echo 'Starting second Client...'; echo ''; ",
@@ -100,7 +100,7 @@
         {
             "appliesTo": "*",
             "properties": {},
-            "taskName": "Laggy Scenario: Server and 1 Client",
+            "taskName": "Laggy 80ms: Server and 1 Client",
             "type": "launch",
             "workingDirectory": "${workspaceRoot}/..",
             "command": "powershell",
@@ -108,7 +108,7 @@
             "args": [
                 "cd ${workspaceRoot}/..;",
                 "echo 'Starting Server...'; echo ''; ",
-                "./Bin64vc140.Dedicated/GridMatePlayersLauncher_Server.exe +gm_net_simulator oLatMin:700 oLatMax:700 +gm_disconnectDetection 0 +map tutorial +mphost; echo ''; ",
+                "./Bin64vc140.Dedicated/GridMatePlayersLauncher_Server.exe +gm_net_simulator oLatMin:80 oLatMax:80 +gm_disconnectDetection 0 +map tutorial +mphost; echo ''; ",
                 "echo 'Starting the only Client...'; echo ''; ",
                 "./Bin64vc140\\GridMatePlayersLauncher.exe +windowxy 620 250 +mpjoin; echo '';"
             ]
@@ -120,6 +120,36 @@
             "workingDirectory": "${workspaceRoot}/..",
             "command": "${workspaceRoot}/../Bin64vc140/Editor.exe &",
             "contextType": "custom"
+        },
+        {
+            "appliesTo": "*",
+            "properties": {},
+            "taskName": "Launch 150ms Server",
+            "type": "launch",
+            "workingDirectory": "${workspaceRoot}/..",
+            "command": "powershell",
+            "contextType": "custom",
+            "args": [
+                "cd ${workspaceRoot}/..;",
+                "echo 'Starting Server...'; echo ''; ",
+                "./Bin64vc140.Dedicated\\GridMatePlayersLauncher_Server.exe +gm_net_simulator oLatMin:150 oLatMax:150 +gm_disconnectDetection 0 +map tutorial +mphost; echo ''; "
+            ]
+        },
+        {
+            "appliesTo": "*",
+            "properties": {},
+            "taskName": "No Lag: Server and 1 Client",
+            "type": "launch",
+            "workingDirectory": "${workspaceRoot}/..",
+            "command": "powershell",
+            "contextType": "custom",
+            "args": [
+                "cd ${workspaceRoot}/..;",
+                "echo 'Starting Server...'; echo ''; ",
+                "./Bin64vc140.Dedicated\\GridMatePlayersLauncher_Server.exe +map tutorial +mphost; echo ''; ",
+                "echo 'Starting first Client...'; echo ''; ",
+                "./Bin64vc140\\GridMatePlayersLauncher.exe +windowxy 620 250 +mpjoin;"
+            ]
         }
     ]
 }

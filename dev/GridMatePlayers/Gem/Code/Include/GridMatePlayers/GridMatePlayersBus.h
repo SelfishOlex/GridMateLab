@@ -9,13 +9,16 @@ namespace GridMatePlayers
         : public AZ::EBusTraits
     {
     public:
-        //////////////////////////////////////////////////////////////////////////
+        virtual ~GridMatePlayersRequests() = default;
         // EBusTraits overrides
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-        //////////////////////////////////////////////////////////////////////////
+        static const AZ::EBusHandlerPolicy HandlerPolicy =
+            AZ::EBusHandlerPolicy::Single;
+        static const AZ::EBusAddressPolicy AddressPolicy =
+            AZ::EBusAddressPolicy::Single;
 
         // Put your public methods here
+        virtual AZ::u32 GetLocalTime() = 0;
     };
-    using GridMatePlayersRequestBus = AZ::EBus<GridMatePlayersRequests>;
+    using GridMatePlayersRequestBus =
+        AZ::EBus<GridMatePlayersRequests>;
 } // namespace GridMatePlayers

@@ -1,63 +1,73 @@
-
 #include "StdAfx.h"
-
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-
 #include "GridMatePlayersSystemComponent.h"
+#include <ISystem.h>
+#include <INetwork.h>
 
 namespace GridMatePlayers
 {
-    void GridMatePlayersSystemComponent::Reflect(AZ::ReflectContext* context)
+    void GridMatePlayersSystemComponent::Reflect(
+        AZ::ReflectContext* context)
     {
-        if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        using namespace AZ;
+        if (auto s = azrtti_cast<SerializeContext*>(context))
         {
-            serialize->Class<GridMatePlayersSystemComponent, AZ::Component>()
+            s->Class<GridMatePlayersSystemComponent, Component>()
                 ->Version(0)
                 ->SerializerForEmptyClass();
 
-            if (AZ::EditContext* ec = serialize->GetEditContext())
+            if (auto ec = s->GetEditContext())
             {
-                ec->Class<GridMatePlayersSystemComponent>("GridMatePlayers", "[Description of functionality provided by this System Component]")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ;
+                ec->Class<GridMatePlayersSystemComponent>(
+                    "GridMatePlayers",
+                    "[Provides network time]")
+                    ->ClassElement(
+                        Edit::ClassElements::EditorData, "")
+                        ->Attribute(Edit::Attributes::
+                            AppearsInAddComponentMenu,
+                            AZ_CRC("System"))
+                        ->Attribute(Edit::Attributes::AutoExpand,
+                            true);
             }
         }
     }
 
-    void GridMatePlayersSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    AZ::u32 GridMatePlayersSystemComponent::GetLocalTime()
     {
-        provided.push_back(AZ_CRC("GridMatePlayersService"));
+        if (!m_session) return 0;
+
+        const auto localTime = m_session->GetTime();
+        if (m_session->IsHost())
+            return AZStd::max(localTime - m_serverBehindTime, 0u);
+
+        return localTime;
     }
 
-    void GridMatePlayersSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    void GridMatePlayersSystemComponent::OnSessionHosted(
+        GridMate::GridSession* session)
     {
-        incompatible.push_back(AZ_CRC("GridMatePlayersService"));
-    }
-
-    void GridMatePlayersSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
-    {
-        (void)required;
-    }
-
-    void GridMatePlayersSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
-    {
-        (void)dependent;
-    }
-
-    void GridMatePlayersSystemComponent::Init()
-    {
+        m_session = session;
     }
 
     void GridMatePlayersSystemComponent::Activate()
     {
         GridMatePlayersRequestBus::Handler::BusConnect();
+        CrySystemEventBus::Handler::BusConnect();
     }
 
     void GridMatePlayersSystemComponent::Deactivate()
     {
         GridMatePlayersRequestBus::Handler::BusDisconnect();
+        GridMate::SessionEventBus::Handler::BusDisconnect();
+        CrySystemEventBus::Handler::BusDisconnect();
+        m_session = nullptr;
+    }
+
+    void GridMatePlayersSystemComponent::OnCrySystemInitialized(
+        ISystem& system, const SSystemInitParams&)
+    {
+        GridMate::SessionEventBus::Handler::BusConnect(
+            system.GetINetwork()->GetGridMate());
+        CrySystemEventBus::Handler::BusDisconnect();
     }
 }

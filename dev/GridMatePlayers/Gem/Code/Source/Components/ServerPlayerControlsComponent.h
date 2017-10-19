@@ -35,8 +35,8 @@ namespace GridMatePlayers
             AZ::ScriptTimePoint time) override;
 
         // RPC callbacks
-        bool OnStartForward(const GridMate::RpcContext& rc);
-        bool OnStopForward(const GridMate::RpcContext& rc);
+        bool OnStartForward(AZ::u32 time, const GridMate::RpcContext& rc);
+        bool OnStopForward(AZ::u32 time, const GridMate::RpcContext& rc);
         bool OnFireCommand(const GridMate::RpcContext& rc);
 
         // NetBindable
@@ -53,5 +53,29 @@ namespace GridMatePlayers
         GridMate::ReplicaChunkPtr m_chunk;
 
         AZ::u32 GetLocalTime() const;
+        AZ::u32 m_localTimeDilation = 200;
+
+        using Time = AZStd::chrono::milliseconds;
+
+        class PlayerActionInTime
+        {
+        public:
+            enum class ActionType
+            {
+                Stop,
+                MoveForward
+            };
+
+            PlayerActionInTime(ActionType action, AZ::u32 time)
+                : m_action(action),
+                  m_time(Time(time)) {}
+
+            ActionType m_action;
+            Time m_time;
+        };
+
+        AZStd::vector<PlayerActionInTime> m_futureActions;
+
+        void PerformAction(const PlayerActionInTime& action);
     };
 }

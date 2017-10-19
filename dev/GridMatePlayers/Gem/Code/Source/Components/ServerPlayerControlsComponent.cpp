@@ -8,6 +8,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <GridMatePlayers/LocalPredictionRequestBus.h>
 #include <GridMate/Replica/ReplicaMgr.h>
+#include <GridMatePlayers/GridMatePlayersBus.h>
 
 using namespace AZ;
 using namespace AzFramework;
@@ -32,12 +33,12 @@ public:
 
     bool IsReplicaMigratable() override { return true; }
 
-    GridMate::Rpc<>::BindInterface<
+    GridMate::Rpc<RpcArg<u32>>::BindInterface<
         ServerPlayerControls,
         &ServerPlayerControls::OnStartForward>
         m_startForward;
 
-    GridMate::Rpc<>::BindInterface<
+    GridMate::Rpc<RpcArg<u32>>::BindInterface<
         ServerPlayerControls,
         &ServerPlayerControls::OnStopForward>
         m_stopForward;
@@ -132,15 +133,16 @@ void ServerPlayerControls::UnbindFromNetwork()
 
 AZ::u32 ServerPlayerControls::GetLocalTime() const
 {
-    if (!m_chunk) return 0;
-    return m_chunk->GetReplicaManager()->GetTime().m_localTime;
+    AZ::u32 t = 0;
+    EBUS_EVENT_RESULT(t, GridMatePlayersRequestBus, GetLocalTime);
+    return t;
 }
 
 void ServerPlayerControls::ForwardKeyUp()
 {
     if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
     {
-        chunk->m_stopForward();
+        chunk->m_stopForward(GetLocalTime());
 
         EBUS_EVENT_ID(GetEntityId(),
             LocalPredictionRequestBus,
@@ -152,7 +154,7 @@ void ServerPlayerControls::ForwardKeyDown()
 {
     if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
     {
-        chunk->m_startForward();
+        chunk->m_startForward(GetLocalTime());
 
         EBUS_EVENT_ID(GetEntityId(),
             LocalPredictionRequestBus,
@@ -169,6 +171,21 @@ void ServerPlayerControls::FireKeyUp()
 void ServerPlayerControls::OnTick(float deltaTime,
     ScriptTimePoint)
 {
+    const auto localTime = GetLocalTime();
+    for (auto iter = m_futureActions.begin();
+        iter!= m_futureActions.end();)
+    {
+        auto& action = *iter;
+
+        if (action.m_time.count() <= localTime)
+        {
+            PerformAction(action);
+            iter = m_futureActions.erase(iter);
+        }
+        else
+            iter++;
+    }
+
     Vector3 moveDirection;
     if (m_movingForward)
         moveDirection = Vector3::CreateAxisY(m_speed);
@@ -182,17 +199,49 @@ void ServerPlayerControls::OnTick(float deltaTime,
 }
 
 bool ServerPlayerControls::OnStartForward(
+    AZ::u32 time,
     const GridMate::RpcContext& rc)
 {
-    m_movingForward = true;
+    const PlayerActionInTime action{
+        PlayerActionInTime::ActionType::MoveForward, time };
+
+    if (time > GetLocalTime())
+        m_futureActions.push_back(action);
+    else
+        PerformAction(action);
+
     return false;
 }
 
 bool ServerPlayerControls::OnStopForward(
+    AZ::u32 time,
     const GridMate::RpcContext& rc)
 {
-    m_movingForward = false;
+    const PlayerActionInTime action{
+        PlayerActionInTime::ActionType::Stop, time };
+
+    if (time > GetLocalTime())
+        m_futureActions.push_back(action);
+    else
+        PerformAction(action);
+
     return false;
+}
+
+void ServerPlayerControls::PerformAction(
+    const PlayerActionInTime& action)
+{
+    switch(action.m_action)
+    {
+    case PlayerActionInTime::ActionType::MoveForward:
+        m_movingForward = true;
+        break;
+    case PlayerActionInTime::ActionType::Stop:
+        m_movingForward = false;
+        break;
+    default:
+        break;
+    }
 }
 
 bool ServerPlayerControls::OnFireCommand(

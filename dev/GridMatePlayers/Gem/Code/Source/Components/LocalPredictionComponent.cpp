@@ -6,6 +6,8 @@
 #include "AzCore/Component/TransformBus.h"
 #include "GridMate/Replica/ReplicaMgr.h"
 #include "LmbrCentral/Physics/CryCharacterPhysicsBus.h"
+#include <GridMatePlayers/InterpolationBus.h>
+#include <GridMatePlayers/GridMatePlayersBus.h>
 
 using namespace AZ;
 using namespace AzFramework;
@@ -46,14 +48,15 @@ void LocalPredictionComponent::Reflect(ReflectContext* reflect)
                 "[Guesses how server will move the character]")
                 ->ClassElement(
                     Edit::ClassElements::EditorData, "")
-                ->Attribute(Edit::Attributes::Category,
-                    "GridMate Players")
-                ->Attribute(Edit::Attributes::
-                    AppearsInAddComponentMenu,
-                    AZ_CRC("Game"))
+                    ->Attribute(Edit::Attributes::Category,
+                        "GridMate Players")
+                    ->Attribute(Edit::Attributes::
+                        AppearsInAddComponentMenu,
+                        AZ_CRC("Game"))
                 ->DataElement(nullptr,
                     &LocalPredictionComponent::m_allowedDeviation,
-                    "Allowed Deviation", "");
+                    "Allowed Deviation", "")
+                    ->Attribute(Edit::Attributes::Suffix, " m");
         }
     }
 
@@ -133,21 +136,21 @@ void LocalPredictionComponent::OnTransformChanged(
 {
     if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
     {
-        const auto diff =
-            chunk->m_serverCheckpoint.Get().m_vector -
-            world.GetTranslation();
-        if (float(diff.GetLength()) < m_allowedDeviation) return;
-
-        AZ_Printf("Book", "server (-- %f --) @ %d",
-            static_cast<float>(world.GetTranslation().GetY()),
-            GetLocalTime());
+        if (world.GetTranslation() !=
+            chunk->m_serverCheckpoint.Get().m_vector)
+        {
+            AZ_Printf("Book", "server (-- %f --) @ %d",
+                static_cast<float>(world.GetTranslation().GetY()),
+                GetLocalTime());
+        }
 
         chunk->m_serverCheckpoint.Set(
             { world.GetTranslation(), GetLocalTime() });
     }
 }
 
-void LocalPredictionComponent::OnTick(float, ScriptTimePoint)
+void LocalPredictionComponent::OnTick(float deltaTime,
+    ScriptTimePoint)
 {
     EBUS_EVENT_ID(GetEntityId(),
         LmbrCentral::CryCharacterPhysicsRequestBus,
@@ -157,16 +160,17 @@ void LocalPredictionComponent::OnTick(float, ScriptTimePoint)
 
 Vector3 LocalPredictionComponent::GetPosition() const
 {
-    auto t = AZ::Transform::CreateIdentity();
-    EBUS_EVENT_ID_RESULT(t, GetEntityId(), AZ::TransformBus,
-        GetWorldTM);
-    return t.GetTranslation();
+    auto v = AZ::Vector3::CreateZero();
+    EBUS_EVENT_ID_RESULT(v, GetEntityId(), InterpolationBus,
+        GetInterpolationTarget);
+    return v;
 }
 
 AZ::u32 LocalPredictionComponent::GetLocalTime() const
 {
-    if (!m_chunk) return 0;
-    return m_chunk->GetReplicaManager()->GetTime().m_localTime;
+    AZ::u32 t = 0;
+    EBUS_EVENT_RESULT(t, GridMatePlayersRequestBus, GetLocalTime);
+    return t;
 }
 
 void LocalPredictionComponent::OnNewServerCheckpoint(
@@ -176,30 +180,28 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
         !NetQuery::IsEntityAuthoritative(GetEntityId()))
     {
         const auto& serverPos = value.m_vector;
-        const auto serverTime = value.m_time
-            - (GetLocalTime() - value.m_time);
+        const auto serverTime = value.m_time;
 
         if (m_history.HasHistory())
         {
             const auto backThen =
                 m_history.GetPositionAt(serverTime);
             const auto diff = backThen - serverPos;
+            const auto diffLength = diff.GetLength();
 
-            if (diff.GetLength() > m_allowedDeviation)
+            if (diffLength > m_allowedDeviation)
             {
-                auto now = AZ::Transform::CreateIdentity();
-                EBUS_EVENT_ID_RESULT(now, GetEntityId(),
-                    AZ::TransformBus, GetWorldTM);
-
-                const auto adjusted = now.GetTranslation() - diff;
+                Vector3 adjusted;
+                if (diffLength > 2 * m_allowedDeviation)
+                    adjusted = serverPos;
+                else
+                    adjusted = GetPosition() - diff;
 
                 m_history.DeleteAfter(serverTime);
                 m_history.AddDataPoint(serverPos, serverTime);
-                m_history.AddDataPoint(adjusted, GetLocalTime());
 
-                EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus,
-                    SetWorldTM,
-                    Transform::CreateTranslation(adjusted));
+                EBUS_EVENT_ID(GetEntityId(), InterpolationBus,
+                    SetInterpolationTarget, adjusted);
 
                 AZ_Printf("Book", "new (-- %f --) @%d; dv %f",
                     static_cast<float>(adjusted.GetY()),
@@ -210,9 +212,8 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
         else
         {
             m_history.AddDataPoint(serverPos, serverTime);
-            EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus,
-                SetWorldTM,
-                Transform::CreateTranslation(serverPos));
+            EBUS_EVENT_ID(GetEntityId(), InterpolationBus,
+                SetInterpolationTarget, serverPos);
         }
     }
 }
