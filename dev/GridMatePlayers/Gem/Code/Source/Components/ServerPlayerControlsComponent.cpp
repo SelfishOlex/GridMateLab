@@ -178,7 +178,6 @@ void ServerPlayerControlsComponent::OnTick(float deltaTime,
     {
         auto& action = m_futureActions.top();
         PerformAction(action);
-
         m_futureActions.pop();
     }
 
