@@ -36,9 +36,7 @@ void LocalPredictionComponent::Reflect(ReflectContext* reflect)
     if (auto sc = azrtti_cast<SerializeContext*>(reflect))
     {
         sc->Class<LocalPredictionComponent, Component>()
-            ->Version(1)
-            ->Field("Allowed Deviation",
-                &LocalPredictionComponent::m_allowedDeviation);
+            ->Version(1);
 
         if (auto ec = sc->GetEditContext())
         {
@@ -51,11 +49,7 @@ void LocalPredictionComponent::Reflect(ReflectContext* reflect)
                         "GridMate Players")
                     ->Attribute(Edit::Attributes::
                         AppearsInAddComponentMenu,
-                        AZ_CRC("Game"))
-                ->DataElement(nullptr,
-                    &LocalPredictionComponent::m_allowedDeviation,
-                    "Allowed Deviation", "")
-                    ->Attribute(Edit::Attributes::Suffix, " m");
+                        AZ_CRC("Game"));
         }
     }
 
@@ -188,22 +182,19 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
             const auto diff = backThen - serverPos;
             const auto diffLength = diff.GetLength();
 
-            if (diffLength > m_allowedDeviation)
-            {
-                Vector3 adjusted;
-                if (diffLength > 2 * m_allowedDeviation)
-                    adjusted = serverPos;
-                else
-                    adjusted = GetPosition() - diff;
+            const auto allowedDeviation =
+                (GetTime() - serverTime) * m_speed;
 
+            if (diffLength > allowedDeviation)
+            {
                 m_history.DeleteAfter(serverTime);
                 m_history.AddDataPoint(serverPos, serverTime);
 
                 EBUS_EVENT_ID(GetEntityId(), TransformBus,
-                    SetWorldTranslation, adjusted);
+                    SetWorldTranslation, serverPos);
 
-                AZ_Printf("Book", "new (-- %f --) @%d; dv %f",
-                    static_cast<float>(adjusted.GetY()),
+                AZ_Printf("Book", "new (-- %f --) @%d; dy %f",
+                    static_cast<float>(serverPos.GetY()),
                     GetTime(),
                     static_cast<float>(diff.GetY()));
             }
