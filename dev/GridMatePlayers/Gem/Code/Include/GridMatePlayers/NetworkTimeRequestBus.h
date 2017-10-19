@@ -1,24 +1,21 @@
-
 #pragma once
-
 #include <AzCore/EBus/EBus.h>
 
 namespace GridMatePlayers
 {
-    class GridMatePlayersRequests
+    class NetworkTimeRequestInterface
         : public AZ::EBusTraits
     {
     public:
-        virtual ~GridMatePlayersRequests() = default;
+        virtual ~NetworkTimeRequestInterface() = default;
         // EBusTraits overrides
         static const AZ::EBusHandlerPolicy HandlerPolicy =
             AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy =
             AZ::EBusAddressPolicy::Single;
 
-        // Put your public methods here
         virtual AZ::u32 GetLocalTime() = 0;
     };
-    using GridMatePlayersRequestBus =
-        AZ::EBus<GridMatePlayersRequests>;
+    using NetworkTimeRequestBus =
+        AZ::EBus<NetworkTimeRequestInterface>;
 } // namespace GridMatePlayers

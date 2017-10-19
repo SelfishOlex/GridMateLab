@@ -8,7 +8,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <GridMatePlayers/LocalPredictionRequestBus.h>
 #include <GridMate/Replica/ReplicaMgr.h>
-#include <GridMatePlayers/GridMatePlayersBus.h>
+#include <GridMatePlayers/NetworkTimeRequestBus.h>
 
 using namespace AZ;
 using namespace AzFramework;
@@ -134,7 +134,7 @@ void ServerPlayerControls::UnbindFromNetwork()
 AZ::u32 ServerPlayerControls::GetLocalTime() const
 {
     AZ::u32 t = 0;
-    EBUS_EVENT_RESULT(t, GridMatePlayersRequestBus, GetLocalTime);
+    EBUS_EVENT_RESULT(t, NetworkTimeRequestBus, GetLocalTime);
     return t;
 }
 

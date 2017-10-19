@@ -9,15 +9,17 @@
         "Include": [
             "Include/GridMatePlayers/ServerPlayerBodyBus.h",
             "Include/GridMatePlayers/LocalClientBus.h",
-            "Include/GridMatePlayers/GridMatePlayersBus.h",
+            "Include/GridMatePlayers/NetworkTimeRequestBus.h",
             "Include/GridMatePlayers/PlayerActionsBus.h",
             "Include/GridMatePlayers/LocalPredictionRequestBus.h",
             "Include/GridMatePlayers/PlayerControlsBus.h"
         ],
         "Source": [
-            "Source/GridMatePlayersModule.cpp",
-            "Source/GridMatePlayersSystemComponent.cpp",
-            "Source/GridMatePlayersSystemComponent.h"
+            "Source/GridMatePlayersModule.cpp"
+        ],
+        "Source/System": [
+            "Source/System/NetworkTimeSystemComponent.cpp",
+            "Source/System/NetworkTimeSystemComponent.h"
         ],
         "Source/Utils": [
             "Source/Utils/VectorInTime.cpp",

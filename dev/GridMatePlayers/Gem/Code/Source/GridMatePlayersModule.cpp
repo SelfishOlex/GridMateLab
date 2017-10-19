@@ -1,11 +1,6 @@
-
 #include "StdAfx.h"
 #include <platform_impl.h>
-
 #include <AzCore/Memory/SystemAllocator.h>
-
-#include "GridMatePlayersSystemComponent.h"
-
 #include <IGem.h>
 #include <Components/InputCaptureComponent.h>
 #include <Components/TimedProjectileComponent.h>
@@ -15,6 +10,7 @@
 #include <Components/ServerPlayerSpawner.h>
 #include <Components/ServerPlayerControlsComponent.h>
 #include <Components/LocalPredictionComponent.h>
+#include <System/NetworkTimeSystemComponent.h>
 
 namespace GridMatePlayers
 {
@@ -22,15 +18,18 @@ namespace GridMatePlayers
         : public CryHooksModule
     {
     public:
-        AZ_RTTI(GridMatePlayersModule, "{64B11EE9-696F-4A5A-90CC-FBD6E4867667}", CryHooksModule);
-        AZ_CLASS_ALLOCATOR(GridMatePlayersModule, AZ::SystemAllocator, 0);
+        AZ_RTTI(GridMatePlayersModule,
+            "{64B11EE9-696F-4A5A-90CC-FBD6E4867667}",
+            CryHooksModule);
+        AZ_CLASS_ALLOCATOR(GridMatePlayersModule,
+            AZ::SystemAllocator, 0);
 
         GridMatePlayersModule()
             : CryHooksModule()
         {
-            // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
+            // Push results of [MyComponent]::CreateDescriptor()
             m_descriptors.insert(m_descriptors.end(), {
-                GridMatePlayersSystemComponent::CreateDescriptor(),
+                NetworkTimeSystemComponent::CreateDescriptor(),
                 InputCaptureComponent::CreateDescriptor(),
                 TimedProjectileComponent::CreateDescriptor(),
                 PebbleSpawnerComponent::CreateDescriptor(),
@@ -45,10 +44,11 @@ namespace GridMatePlayers
         /**
          * Add required SystemComponents to the SystemEntity.
          */
-        AZ::ComponentTypeList GetRequiredSystemComponents() const override
+        AZ::ComponentTypeList
+        GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList{
-                azrtti_typeid<GridMatePlayersSystemComponent>(),
+                azrtti_typeid<NetworkTimeSystemComponent>(),
             };
         }
     };
@@ -56,5 +56,7 @@ namespace GridMatePlayers
 
 // DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
 // The first parameter should be GemName_GemIdLower
-// The second should be the fully qualified name of the class above
-AZ_DECLARE_MODULE_CLASS(GridMatePlayers_83176372815649969d9127938273d9ad, GridMatePlayers::GridMatePlayersModule)
+// The second should be the fully qualified name of the class
+AZ_DECLARE_MODULE_CLASS(
+    GridMatePlayers_83176372815649969d9127938273d9ad,
+    GridMatePlayers::GridMatePlayersModule)

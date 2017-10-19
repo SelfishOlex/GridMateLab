@@ -1,22 +1,28 @@
 #pragma once
 #include <AzCore/Component/Component.h>
-#include <GridMatePlayers/GridMatePlayersBus.h>
+#include <GridMatePlayers/NetworkTimeRequestBus.h>
 #include <GridMate/Session/Session.h>
 #include <CrySystemBus.h>
 
 namespace GridMatePlayers
 {
-    class GridMatePlayersSystemComponent
+    class NetworkTimeSystemComponent
         : public AZ::Component
-        , protected GridMatePlayersRequestBus::Handler
+        , protected NetworkTimeRequestBus::Handler
         , public GridMate::SessionEventBus::Handler
         , public CrySystemEventBus::Handler
     {
     public:
-        AZ_COMPONENT(GridMatePlayersSystemComponent,
-            "{27902E8B-0810-4C59-976E-C76A651CDD51}");
+        AZ_COMPONENT(NetworkTimeSystemComponent,
+            "{6ADBBF4F-1895-4580-BE77-166614E22B9C}");
 
         static void Reflect(AZ::ReflectContext* context);
+
+        static void GetProvidedServices(
+            AZ::ComponentDescriptor::DependencyArrayType& list)
+        {
+            list.push_back(AZ_CRC("NetworkTimeService"));
+        }
 
     protected:
         // GridMatePlayersRequestBus interface implementation
@@ -25,8 +31,9 @@ namespace GridMatePlayers
         // SessionEventBus
         void OnSessionHosted(
             GridMate::GridSession* session) override;
-
         void OnSessionJoined(
+            GridMate::GridSession* session) override;
+        void OnSessionDelete(
             GridMate::GridSession* session) override;
 
         // AZ::Component interface implementation
@@ -38,7 +45,6 @@ namespace GridMatePlayers
             const SSystemInitParams&) override;
     private:
         GridMate::GridSession* m_session = nullptr;
-
-        AZ::u32 m_serverBehindTime = 200;
+        AZ::u32 m_serverLag = 200; // milliseconds
     };
 }

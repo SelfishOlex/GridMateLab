@@ -6,7 +6,7 @@
 #include "AzCore/Component/TransformBus.h"
 #include "GridMate/Replica/ReplicaMgr.h"
 #include "LmbrCentral/Physics/CryCharacterPhysicsBus.h"
-#include <GridMatePlayers/GridMatePlayersBus.h>
+#include <GridMatePlayers/NetworkTimeRequestBus.h>
 
 using namespace AZ;
 using namespace AzFramework;
@@ -168,7 +168,7 @@ Vector3 LocalPredictionComponent::GetPosition() const
 AZ::u32 LocalPredictionComponent::GetTime() const
 {
     AZ::u32 t = 0;
-    EBUS_EVENT_RESULT(t, GridMatePlayersRequestBus, GetLocalTime);
+    EBUS_EVENT_RESULT(t, NetworkTimeRequestBus, GetLocalTime);
     return t;
 }
 
