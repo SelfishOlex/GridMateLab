@@ -6,7 +6,6 @@
 #include <LmbrCentral/Scripting/SpawnerComponentBus.h>
 // for marshaling AZ::Vector3
 #include <GridMate/Serialize/MathMarshal.h>
-#include <GridMate/Replica/ReplicaMgr.h>
 
 using namespace AZ;
 using namespace AzFramework;
