@@ -6,7 +6,6 @@
 #include "AzCore/Component/TransformBus.h"
 #include "GridMate/Replica/ReplicaMgr.h"
 #include "LmbrCentral/Physics/CryCharacterPhysicsBus.h"
-#include <GridMatePlayers/InterpolationBus.h>
 #include <GridMatePlayers/GridMatePlayersBus.h>
 
 using namespace AZ;
@@ -161,8 +160,8 @@ void LocalPredictionComponent::OnTick(float deltaTime,
 Vector3 LocalPredictionComponent::GetPosition() const
 {
     auto v = AZ::Vector3::CreateZero();
-    EBUS_EVENT_ID_RESULT(v, GetEntityId(), InterpolationBus,
-        GetInterpolationTarget);
+    EBUS_EVENT_ID_RESULT(v, GetEntityId(), TransformBus,
+        GetWorldTranslation);
     return v;
 }
 
@@ -200,8 +199,8 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
                 m_history.DeleteAfter(serverTime);
                 m_history.AddDataPoint(serverPos, serverTime);
 
-                EBUS_EVENT_ID(GetEntityId(), InterpolationBus,
-                    SetInterpolationTarget, adjusted);
+                EBUS_EVENT_ID(GetEntityId(), TransformBus,
+                    SetWorldTranslation, adjusted);
 
                 AZ_Printf("Book", "new (-- %f --) @%d; dv %f",
                     static_cast<float>(adjusted.GetY()),
@@ -212,8 +211,8 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
         else
         {
             m_history.AddDataPoint(serverPos, serverTime);
-            EBUS_EVENT_ID(GetEntityId(), InterpolationBus,
-                SetInterpolationTarget, serverPos);
+            EBUS_EVENT_ID(GetEntityId(), TransformBus,
+                SetWorldTranslation, serverPos);
         }
     }
 }

@@ -15,7 +15,6 @@
 #include <Components/ServerPlayerSpawner.h>
 #include <Components/ServerPlayerControlsComponent.h>
 #include <Components/LocalPredictionComponent.h>
-#include <Components/InterpolationComponent.h>
 
 namespace GridMatePlayers
 {
@@ -40,7 +39,6 @@ namespace GridMatePlayers
                 LocalClientComponent::CreateDescriptor(),
                 ServerPlayerControls::CreateDescriptor(),
                 LocalPredictionComponent::CreateDescriptor(),
-                InterpolationComponent::CreateDescriptor(),
             });
         }
 

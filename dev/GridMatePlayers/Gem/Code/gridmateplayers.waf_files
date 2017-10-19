@@ -28,8 +28,6 @@
         "Source/Components": [
             "Source/Components/InputCaptureComponent.cpp",
             "Source/Components/InputCaptureComponent.h",
-            "Source/Components/InterpolationComponent.cpp",
-            "Source/Components/InterpolationComponent.h",
             "Source/Components/LocalClientComponent.cpp",
             "Source/Components/LocalClientComponent.h",
             "Source/Components/LocalPredictionComponent.cpp",

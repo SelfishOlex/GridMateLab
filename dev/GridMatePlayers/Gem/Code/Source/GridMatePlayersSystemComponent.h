@@ -26,6 +26,9 @@ namespace GridMatePlayers
         void OnSessionHosted(
             GridMate::GridSession* session) override;
 
+        void OnSessionJoined(
+            GridMate::GridSession* session) override;
+
         // AZ::Component interface implementation
         void Activate() override;
         void Deactivate() override;

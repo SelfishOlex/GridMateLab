@@ -49,6 +49,12 @@ namespace GridMatePlayers
         m_session = session;
     }
 
+    void GridMatePlayersSystemComponent::OnSessionJoined(
+        GridMate::GridSession* session)
+    {
+        m_session = session;
+    }
+
     void GridMatePlayersSystemComponent::Activate()
     {
         GridMatePlayersRequestBus::Handler::BusConnect();
