@@ -6,18 +6,18 @@
 
 namespace GridMatePlayers
 {
-    class ServerPlayerControls
+    class ServerPlayerControlsComponent
         : public AZ::Component
         , public PlayerControlsBus::Handler
         , public AZ::TickBus::Handler
         , public AzFramework::NetBindable
     {
     public:
-        AZ_COMPONENT(ServerPlayerControls,
+        AZ_COMPONENT(ServerPlayerControlsComponent,
             "{8381b4f3-e7de-4dfc-845b-e52fd7bd2394}",
             NetBindable);
 
-        ~ServerPlayerControls() override = default;
+        ~ServerPlayerControlsComponent() override = default;
 
         static void Reflect(AZ::ReflectContext* reflection);
 
@@ -57,6 +57,12 @@ namespace GridMatePlayers
         class PlayerActionInTime
         {
         public:
+            bool operator<(const PlayerActionInTime& right) const
+            {
+                // Sort with smaller values on top of priority q
+                return (m_time > right.m_time);
+            }
+
             enum class ActionType
             {
                 Stop,
@@ -65,13 +71,13 @@ namespace GridMatePlayers
 
             PlayerActionInTime(ActionType action, AZ::u32 time)
                 : m_action(action),
-                  m_time(AZStd::chrono::milliseconds(time)) {}
+                  m_time(time) {}
 
             ActionType m_action;
-            AZStd::chrono::milliseconds m_time;
+            AZ::u32 m_time; // milliseconds
         };
 
-        AZStd::vector<PlayerActionInTime> m_futureActions;
+        AZStd::priority_queue<PlayerActionInTime> m_futureActions;
 
         void PerformAction(const PlayerActionInTime& action);
     };
