@@ -45,11 +45,11 @@ void LocalPredictionComponent::Reflect(ReflectContext* reflect)
                 "[Guesses how server will move the character]")
                 ->ClassElement(
                     Edit::ClassElements::EditorData, "")
-                    ->Attribute(Edit::Attributes::Category,
-                        "GridMate Players")
-                    ->Attribute(Edit::Attributes::
-                        AppearsInAddComponentMenu,
-                        AZ_CRC("Game"));
+                ->Attribute(Edit::Attributes::Category,
+                    "GridMate Players")
+                ->Attribute(Edit::Attributes::
+                    AppearsInAddComponentMenu,
+                    AZ_CRC("Game"));
         }
     }
 
