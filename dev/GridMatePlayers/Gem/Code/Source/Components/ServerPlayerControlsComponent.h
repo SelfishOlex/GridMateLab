@@ -53,9 +53,6 @@ namespace GridMatePlayers
         GridMate::ReplicaChunkPtr m_chunk;
 
         AZ::u32 GetLocalTime() const;
-        AZ::u32 m_localTimeDilation = 200;
-
-        using Time = AZStd::chrono::milliseconds;
 
         class PlayerActionInTime
         {
@@ -68,10 +65,10 @@ namespace GridMatePlayers
 
             PlayerActionInTime(ActionType action, AZ::u32 time)
                 : m_action(action),
-                  m_time(Time(time)) {}
+                  m_time(AZStd::chrono::milliseconds(time)) {}
 
             ActionType m_action;
-            Time m_time;
+            AZStd::chrono::milliseconds m_time;
         };
 
         AZStd::vector<PlayerActionInTime> m_futureActions;

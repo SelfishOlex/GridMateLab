@@ -199,8 +199,7 @@ void ServerPlayerControls::OnTick(float deltaTime,
 }
 
 bool ServerPlayerControls::OnStartForward(
-    AZ::u32 time,
-    const GridMate::RpcContext& rc)
+    AZ::u32 time, const GridMate::RpcContext&)
 {
     const PlayerActionInTime action{
         PlayerActionInTime::ActionType::MoveForward, time };
@@ -209,13 +208,11 @@ bool ServerPlayerControls::OnStartForward(
         m_futureActions.push_back(action);
     else
         PerformAction(action);
-
     return false;
 }
 
 bool ServerPlayerControls::OnStopForward(
-    AZ::u32 time,
-    const GridMate::RpcContext& rc)
+    AZ::u32 time, const GridMate::RpcContext&)
 {
     const PlayerActionInTime action{
         PlayerActionInTime::ActionType::Stop, time };
@@ -224,7 +221,6 @@ bool ServerPlayerControls::OnStopForward(
         m_futureActions.push_back(action);
     else
         PerformAction(action);
-
     return false;
 }
 
@@ -245,7 +241,7 @@ void ServerPlayerControls::PerformAction(
 }
 
 bool ServerPlayerControls::OnFireCommand(
-    const GridMate::RpcContext& rc)
+    const GridMate::RpcContext&)
 {
     Vector3 position;
     EBUS_EVENT_ID_RESULT(position, GetEntityId(),
