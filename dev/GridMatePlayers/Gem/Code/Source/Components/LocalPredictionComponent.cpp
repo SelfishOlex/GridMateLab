@@ -189,7 +189,8 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
             const auto diffLength = diff.GetLength();
 
             const auto allowedDeviation =
-                (GetTime() - serverTime) * m_speed;
+                (GetTime() - serverTime) * 0.001f *
+                AZStd::GetMax(m_speed, .5f);
 
             if (diffLength > allowedDeviation)
             {
