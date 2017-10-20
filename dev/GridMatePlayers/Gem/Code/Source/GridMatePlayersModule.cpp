@@ -10,6 +10,7 @@
 #include <Components/ServerPlayerSpawner.h>
 #include <Components/ServerPlayerControlsComponent.h>
 #include <Components/LocalPredictionComponent.h>
+#include <Components/InterpolationComponent.h>
 #include <System/NetworkTimeSystemComponent.h>
 
 namespace GridMatePlayers
@@ -38,6 +39,7 @@ namespace GridMatePlayers
                 LocalClientComponent::CreateDescriptor(),
                 ServerPlayerControlsComponent::CreateDescriptor(),
                 LocalPredictionComponent::CreateDescriptor(),
+                InterpolationComponent::CreateDescriptor(),
             });
         }
 

@@ -7,6 +7,7 @@
 #include "GridMate/Replica/ReplicaMgr.h"
 #include "LmbrCentral/Physics/CryCharacterPhysicsBus.h"
 #include <GridMatePlayers/NetworkTimeRequestBus.h>
+#include <GridMatePlayers/InterpolationBus.h>
 
 using namespace AZ;
 using namespace AzFramework;
@@ -66,9 +67,9 @@ void LocalPredictionComponent::Activate()
     const auto self = GetEntityId();
     LocalPredictionRequestBus::Handler::BusConnect(self);
 
-    if (NetQuery::IsEntityAuthoritative(GetEntityId()))
-        TransformNotificationBus::Handler::BusConnect(self);
-    else
+    TransformNotificationBus::Handler::BusConnect(self);
+
+    if (!NetQuery::IsEntityAuthoritative(GetEntityId()))
         TickBus::Handler::BusConnect();
 
     m_isActive = true;
@@ -79,9 +80,9 @@ void LocalPredictionComponent::Deactivate()
     m_isActive = false;
     LocalPredictionRequestBus::Handler::BusDisconnect();
 
-    if (NetQuery::IsEntityAuthoritative(GetEntityId()))
-        TransformNotificationBus::Handler::BusDisconnect();
-    else
+    TransformNotificationBus::Handler::BusDisconnect();
+
+    if (!NetQuery::IsEntityAuthoritative(GetEntityId()))
         TickBus::Handler::BusDisconnect();
 }
 
@@ -129,16 +130,25 @@ void LocalPredictionComponent::OnTransformChanged(
 {
     if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
     {
-        if (world.GetTranslation() !=
-            chunk->m_serverCheckpoint.Get().m_vector)
+        if (chunk->IsMaster())
         {
-            AZ_Printf("Book", "server (-- %f --) @ %d",
-                static_cast<float>(world.GetTranslation().GetY()),
+            if (world.GetTranslation() !=
+                chunk->m_serverCheckpoint.Get().m_vector)
+            {
+                AZ_Printf("Book", "server (-- %f --) @ %d",
+                    static_cast<float>(
+                        world.GetTranslation().GetY()),
+                    GetTime());
+            }
+
+            chunk->m_serverCheckpoint.Set(
+            { world.GetTranslation(), GetTime() });
+        }
+        else
+        {
+            m_history.AddDataPoint(world.GetTranslation(),
                 GetTime());
         }
-
-        chunk->m_serverCheckpoint.Set(
-            { world.GetTranslation(), GetTime() });
     }
 }
 
@@ -183,20 +193,23 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
             const auto diffLength = diff.GetLength();
 
             const auto allowedDeviation =
-                (GetTime() - serverTime) * m_speed;
+                (GetTime() - serverTime) * 0.001f *
+                AZStd::GetMax(m_speed, .5f);
 
             if (diffLength > allowedDeviation)
             {
                 m_history.DeleteAfter(serverTime);
                 m_history.AddDataPoint(serverPos, serverTime);
 
-                EBUS_EVENT_ID(GetEntityId(), TransformBus,
+                EBUS_EVENT_ID(GetEntityId(), InterpolationBus,
                     SetWorldTranslation, serverPos);
 
-                AZ_Printf("Book", "new (-- %f --) @%d; dy %f",
+                AZ_Printf("Book", "new (-- %f --) @%d; dy %f,"
+                    " dev %f, speed %f",
                     static_cast<float>(serverPos.GetY()),
                     GetTime(),
-                    static_cast<float>(diff.GetY()));
+                    static_cast<float>(diff.GetY()),
+                    allowedDeviation, m_speed);
             }
         }
         else
