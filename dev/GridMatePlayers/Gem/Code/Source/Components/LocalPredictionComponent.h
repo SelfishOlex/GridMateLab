@@ -61,5 +61,7 @@ namespace GridMatePlayers
         float m_speed = 0.f;
 
         MovementHistory m_history;
+
+        bool IsLocallyControlled() const;
     };
 }

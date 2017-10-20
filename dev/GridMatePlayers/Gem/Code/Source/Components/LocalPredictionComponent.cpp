@@ -147,11 +147,7 @@ void LocalPredictionComponent::OnTransformChanged(
         }
         else
         {
-            auto localClient = false;
-            EBUS_EVENT_ID_RESULT(localClient, GetEntityId(),
-                PlayerBodyRequestBus, IsAttachedToLocalClient);
-
-            if (localClient)
+            if (IsLocallyControlled())
             {
                 m_history.AddDataPoint(world.GetTranslation(),
                     GetTime());
@@ -163,11 +159,7 @@ void LocalPredictionComponent::OnTransformChanged(
 void LocalPredictionComponent::OnTick(float deltaTime,
     ScriptTimePoint)
 {
-    auto localClient = false;
-    EBUS_EVENT_ID_RESULT(localClient, GetEntityId(),
-        PlayerBodyRequestBus, IsAttachedToLocalClient);
-
-    if (localClient)
+    if (IsLocallyControlled())
     {
         EBUS_EVENT_ID(GetEntityId(),
             LmbrCentral::CryCharacterPhysicsRequestBus,
@@ -191,6 +183,14 @@ AZ::u32 LocalPredictionComponent::GetTime() const
     return t;
 }
 
+bool LocalPredictionComponent::IsLocallyControlled() const
+{
+    auto localClient = false;
+    EBUS_EVENT_ID_RESULT(localClient, GetEntityId(),
+        PlayerBodyRequestBus, IsAttachedToLocalClient);
+    return localClient;
+}
+
 void LocalPredictionComponent::OnNewServerCheckpoint(
     const VectorInTime& value, const GridMate::TimeContext&)
 {
@@ -200,11 +200,7 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
         const auto& serverPos = value.m_vector;
         const auto serverTime = value.m_time;
 
-        auto localClient = false;
-        EBUS_EVENT_ID_RESULT(localClient, GetEntityId(),
-            PlayerBodyRequestBus, IsAttachedToLocalClient);
-
-        if (m_history.HasHistory() && localClient)
+        if (m_history.HasHistory() && IsLocallyControlled())
         {
             const auto backThen =
                 m_history.GetPositionAt(serverTime);
