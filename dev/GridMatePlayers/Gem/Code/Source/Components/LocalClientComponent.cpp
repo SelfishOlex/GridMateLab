@@ -5,6 +5,7 @@
 #include <AzCore/Math/Transform.h>
 #include <ISystem.h>
 #include <INetwork.h>
+#include <GridMatePlayers/PlayerBodyBus.h>
 
 using namespace AZ;
 using namespace AzFramework;
@@ -79,6 +80,9 @@ void LocalClientComponent::AttachToBody(
 
     EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus,
         SetParentRelative, body);
+
+    EBUS_EVENT_ID(body, PlayerBodyNotificationBus,
+        OnLocalClientAttached, playerId);
 }
 
 void LocalClientComponent::OnMemberJoined(

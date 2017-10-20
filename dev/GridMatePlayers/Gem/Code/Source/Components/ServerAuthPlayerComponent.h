@@ -2,15 +2,16 @@
 #include <AzCore/Component/Component.h>
 #include <GridMate/Replica/ReplicaCommon.h>
 #include <AzFramework/Network/NetBindable.h>
-#include <GridMatePlayers/ServerPlayerBodyBus.h>
+#include <GridMatePlayers/PlayerBodyBus.h>
 #include <GridMate/Session/Session.h>
 
 namespace GridMatePlayers
 {
     class ServerAuthPlayerComponent
         : public AZ::Component
-          , public AzFramework::NetBindable
-          , public ServerPlayerBodyBus::Handler
+        , public AzFramework::NetBindable
+        , public PlayerBodyRequestBus::Handler
+        , public PlayerBodyNotificationBus::MultiHandler
     {
     public:
         AZ_COMPONENT(ServerAuthPlayerComponent,
@@ -29,8 +30,13 @@ namespace GridMatePlayers
         void Activate() override;
         void Deactivate() override;
 
-        // ServerPlayerBodyBus interface
+        // PlayerBodyRequestBus interface
         void SetAssociatedPlayerId(
+            const GridMate::MemberIDCompact& player) override;
+        bool IsAttachedToLocalClient() override;
+
+        // PlayerBodyNotificationBus
+        void OnLocalClientAttached(
             const GridMate::MemberIDCompact& player) override;
 
         // DataSet callback
@@ -44,5 +50,7 @@ namespace GridMatePlayers
 
         void BroadcastNewBody();
         bool m_readyToConnectToBody = false;
+
+        bool m_connectedToLocalClient = false;
     };
 }

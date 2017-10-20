@@ -8,6 +8,7 @@
 #include "LmbrCentral/Physics/CryCharacterPhysicsBus.h"
 #include <GridMatePlayers/NetworkTimeRequestBus.h>
 #include <GridMatePlayers/InterpolationBus.h>
+#include <GridMatePlayers/PlayerBodyBus.h>
 
 using namespace AZ;
 using namespace AzFramework;
@@ -146,8 +147,15 @@ void LocalPredictionComponent::OnTransformChanged(
         }
         else
         {
-            m_history.AddDataPoint(world.GetTranslation(),
-                GetTime());
+            auto localClient = false;
+            EBUS_EVENT_ID_RESULT(localClient, GetEntityId(),
+                PlayerBodyRequestBus, IsAttachedToLocalClient);
+
+            if (localClient)
+            {
+                m_history.AddDataPoint(world.GetTranslation(),
+                    GetTime());
+            }
         }
     }
 }
@@ -155,10 +163,17 @@ void LocalPredictionComponent::OnTransformChanged(
 void LocalPredictionComponent::OnTick(float deltaTime,
     ScriptTimePoint)
 {
-    EBUS_EVENT_ID(GetEntityId(),
-        LmbrCentral::CryCharacterPhysicsRequestBus,
-        RequestVelocity,
-        Vector3::CreateAxisY(m_speed), 0);
+    auto localClient = false;
+    EBUS_EVENT_ID_RESULT(localClient, GetEntityId(),
+        PlayerBodyRequestBus, IsAttachedToLocalClient);
+
+    if (localClient)
+    {
+        EBUS_EVENT_ID(GetEntityId(),
+            LmbrCentral::CryCharacterPhysicsRequestBus,
+            RequestVelocity,
+            Vector3::CreateAxisY(m_speed), 0);
+    }
 }
 
 Vector3 LocalPredictionComponent::GetPosition() const
@@ -185,7 +200,11 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
         const auto& serverPos = value.m_vector;
         const auto serverTime = value.m_time;
 
-        if (m_history.HasHistory())
+        auto localClient = false;
+        EBUS_EVENT_ID_RESULT(localClient, GetEntityId(),
+            PlayerBodyRequestBus, IsAttachedToLocalClient);
+
+        if (m_history.HasHistory() && localClient)
         {
             const auto backThen =
                 m_history.GetPositionAt(serverTime);

@@ -8,7 +8,7 @@
     "auto": {
         "Include": [
             "Include/GridMatePlayers/InterpolationBus.h",
-            "Include/GridMatePlayers/ServerPlayerBodyBus.h",
+            "Include/GridMatePlayers/PlayerBodyBus.h",
             "Include/GridMatePlayers/LocalClientBus.h",
             "Include/GridMatePlayers/NetworkTimeRequestBus.h",
             "Include/GridMatePlayers/PlayerActionsBus.h",

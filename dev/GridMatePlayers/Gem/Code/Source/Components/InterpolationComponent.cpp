@@ -3,6 +3,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Component/TransformBus.h>
+#include <GridMatePlayers/PlayerBodyBus.h>
 
 using namespace AZ;
 using namespace GridMatePlayers;
@@ -15,8 +16,10 @@ void InterpolationComponent::Reflect(ReflectContext* reflection)
             ->Version(1)
             ->Field("Enable Interpolation",
                 &InterpolationComponent::m_enabled)
-            ->Field("Interpolation Delay",
-                &InterpolationComponent::m_totalTime);
+            ->Field("Delay For Self",
+                &InterpolationComponent::m_delayForSelf)
+            ->Field("Delay For Others",
+                &InterpolationComponent::m_delayForOthers);
 
         if (auto ec = sc->GetEditContext())
             ec->Class<InterpolationComponent>(
@@ -34,8 +37,14 @@ void InterpolationComponent::Reflect(ReflectContext* reflection)
                     &InterpolationComponent::m_enabled,
                     "Enable Interpolation", "")
                 ->DataElement(nullptr,
-                    &InterpolationComponent::m_totalTime,
-                    "Interpolation Delay", "")
+                    &InterpolationComponent::m_delayForSelf,
+                    "Delay For Self",
+                    "Interpolation delay for the local client")
+                    ->Attribute(Edit::Attributes::Suffix, " sec")
+                ->DataElement(nullptr,
+                    &InterpolationComponent::m_delayForOthers,
+                    "Delay For Others",
+                    "Interpolation delay for other clients")
                     ->Attribute(Edit::Attributes::Suffix, " sec");
     }
 }
@@ -43,7 +52,7 @@ void InterpolationComponent::Reflect(ReflectContext* reflection)
 void InterpolationComponent::Activate()
 {
     m_hasDesired = false;
-    m_leftTime = m_totalTime;
+    m_leftTime = GetLocalDelay();
     InterpolationBus::Handler::BusConnect(GetEntityId());
     if (m_enabled)
     {
@@ -54,7 +63,7 @@ void InterpolationComponent::Activate()
 void InterpolationComponent::Deactivate()
 {
     m_hasDesired = false;
-    m_leftTime = m_totalTime;
+    m_leftTime = GetLocalDelay();
     InterpolationBus::Handler::BusDisconnect();
     if (m_enabled)
     {
@@ -71,7 +80,7 @@ void InterpolationComponent::OnTick(float deltaTime,
     EBUS_EVENT_ID_RESULT(v, GetEntityId(),
         AZ::TransformBus, GetWorldTranslation);
 
-    const auto portion = (m_totalTime  - m_leftTime) / m_totalTime;
+    const auto portion = (GetLocalDelay() - m_leftTime) / GetLocalDelay();
     const auto updated = v.Lerp(m_desired, portion);
 
     EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus,
@@ -97,7 +106,7 @@ void InterpolationComponent::SetWorldTranslation(
     {
         m_hasDesired = true;
         m_desired = desired;
-        m_leftTime = m_totalTime;
+        m_leftTime = GetLocalDelay();
     }
     else
     {
@@ -117,4 +126,13 @@ AZ::Vector3 InterpolationComponent::GetWorldTranslation()
     EBUS_EVENT_ID_RESULT(v, GetEntityId(), AZ::TransformBus,
         GetWorldTranslation);
     return v;
+}
+
+float InterpolationComponent::GetLocalDelay()
+{
+    auto localClient = false;
+    EBUS_EVENT_ID_RESULT(localClient, GetEntityId(),
+        PlayerBodyRequestBus, IsAttachedToLocalClient);
+
+    return localClient ? m_delayForSelf : m_delayForOthers;
 }

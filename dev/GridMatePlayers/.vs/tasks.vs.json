@@ -64,7 +64,7 @@
     {
       "appliesTo": "*",
       "properties": {},
-      "taskName": "Laggy 150ms: Server and 2 Clients",
+      "taskName": "Laggy 0-150ms: Server and 2 Clients",
       "type": "launch",
       "workingDirectory": "${workspaceRoot}/..",
       "command": "powershell",
@@ -72,7 +72,7 @@
       "args": [
         "cd ${workspaceRoot}/..;",
         "echo 'Starting Server...'; echo ''; ",
-        "./Bin64vc140.Dedicated\\GridMatePlayersLauncher_Server.exe +gm_net_simulator oLatMin:150 oLatMax:150 +gm_disconnectDetection 0 +map tutorial +mphost; echo ''; ",
+        "./Bin64vc140.Dedicated\\GridMatePlayersLauncher_Server.exe +gm_net_simulator oLatMin:0 oLatMax:150 +gm_disconnectDetection 0 +map tutorial +mphost; echo ''; ",
         "echo 'Starting first Client...'; echo ''; ",
         "./Bin64vc140\\GridMatePlayersLauncher.exe +mpjoin +windowxy 0 0;",
         "echo 'Starting second Client...'; echo ''; ",

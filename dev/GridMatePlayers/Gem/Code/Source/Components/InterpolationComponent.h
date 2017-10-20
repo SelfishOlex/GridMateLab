@@ -41,6 +41,9 @@ namespace GridMatePlayers
         bool m_hasDesired = false;
         AZ::Vector3 m_desired = AZ::Vector3::CreateZero();
         float m_leftTime = 0.f;
-        float m_totalTime = 0.2f;
+
+        float GetLocalDelay();
+        float m_delayForSelf = 0.2f;
+        float m_delayForOthers = 1.0f;
     };
 }

@@ -5,7 +5,7 @@
 #include <ISystem.h>
 #include <INetwork.h>
 #include <LmbrCentral/Scripting/SpawnerComponentBus.h>
-#include <GridMatePlayers/ServerPlayerBodyBus.h>
+#include <GridMatePlayers/PlayerBodyBus.h>
 
 using namespace AZ;
 using namespace AzFramework;
@@ -97,7 +97,7 @@ void ServerPlayerSpawner::OnSliceInstantiated(
         for (auto& entity : address.second->
             GetInstantiated()->m_entities)
         {
-            EBUS_EVENT_ID(entity->GetId(), ServerPlayerBodyBus,
+            EBUS_EVENT_ID(entity->GetId(), PlayerBodyRequestBus,
                 SetAssociatedPlayerId, playerId);
         }
     }

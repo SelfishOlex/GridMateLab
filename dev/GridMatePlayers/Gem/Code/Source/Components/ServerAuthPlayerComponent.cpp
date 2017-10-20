@@ -87,6 +87,17 @@ void ServerAuthPlayerComponent::SetAssociatedPlayerId(
     }
 }
 
+bool ServerAuthPlayerComponent::IsAttachedToLocalClient()
+{
+    return m_connectedToLocalClient;
+}
+
+void ServerAuthPlayerComponent::OnLocalClientAttached(
+    const GridMate::MemberIDCompact& player)
+{
+    m_connectedToLocalClient = true;
+}
+
 ReplicaChunkPtr ServerAuthPlayerComponent::GetNetworkBinding()
 {
     m_chunk = GridMate::CreateReplicaChunk<Chunk>();
@@ -112,11 +123,11 @@ void ServerAuthPlayerComponent::UnbindFromNetwork()
 
 void ServerAuthPlayerComponent::Activate()
 {
-    if (NetQuery::IsEntityAuthoritative(GetEntityId()))
-    {
-        ServerPlayerBodyBus::Handler::BusConnect(GetEntityId());
-    }
-    else
+    const auto self = GetEntityId();
+    PlayerBodyNotificationBus::MultiHandler::BusConnect(self);
+    PlayerBodyRequestBus::Handler::BusConnect(self);
+
+    if (!NetQuery::IsEntityAuthoritative(self))
     {
         m_readyToConnectToBody = true;
         BroadcastNewBody();
@@ -125,11 +136,10 @@ void ServerAuthPlayerComponent::Activate()
 
 void ServerAuthPlayerComponent::Deactivate()
 {
-    if (NetQuery::IsEntityAuthoritative(GetEntityId()))
-    {
-        ServerPlayerBodyBus::Handler::BusDisconnect();
-    }
-    else
+    PlayerBodyNotificationBus::MultiHandler::BusDisconnect();
+    PlayerBodyRequestBus::Handler::BusDisconnect();
+
+    if (!NetQuery::IsEntityAuthoritative(GetEntityId()))
     {
         m_readyToConnectToBody = false;
     }
