@@ -50,6 +50,12 @@
             "_comment": "HttpRequestor"
         },
         {
+            "Path": "Gems/CloseAllNetworkPeers",
+            "Uuid": "2fe33254d36e4e7f9b0344a051833956",
+            "Version": "0.1.0",
+            "_comment": "CloseAllNetworkPeers"
+        },
+        {
             "Path": "Gems/LegacyGameInterface",
             "Uuid": "3108b261962e44b6a0c1c036c693bca2",
             "Version": "1.0.0",

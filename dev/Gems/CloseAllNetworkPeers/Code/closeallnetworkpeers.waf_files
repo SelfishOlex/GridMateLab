@@ -1,0 +1,18 @@
+{
+    "none": {
+        "Source": [
+            "Source/StdAfx.cpp",
+            "Source/StdAfx.h"
+        ]
+    },
+    "auto": {
+        "Include": [
+            "Include/CloseAllNetworkPeers/CloseAllNetworkPeersBus.h"
+        ],
+        "Source": [
+            "Source/CloseAllNetworkPeersModule.cpp",
+            "Source/CloseAllNetworkPeersSystemComponent.cpp",
+            "Source/CloseAllNetworkPeersSystemComponent.h"
+        ]
+    }
+}

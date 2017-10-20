@@ -1,0 +1,15 @@
+{
+    "GemFormatVersion": 4,
+    "Uuid": "2fe33254d36e4e7f9b0344a051833956",
+    "Name": "CloseAllNetworkPeers",
+    "DisplayName": "CloseAllNetworkPeers",
+    "Version": "0.1.0",
+    "Summary": "Closes all the clients and the server with a single command from any of the connected network peers. Usage: closeall",
+    "Tags": ["Untagged"],
+    "IconPath": "preview.png",
+    "Modules": [
+        {
+            "Type": "GameModule"
+        }
+    ]
+}
