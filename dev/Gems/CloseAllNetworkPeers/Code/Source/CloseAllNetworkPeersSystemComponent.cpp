@@ -6,67 +6,77 @@
 #include <CloseNetworkPeersComponent.h>
 
 using namespace AZ;
+using namespace AzFramework;
 using namespace GridMate;
 
 namespace CloseAllNetworkPeers
 {
-    void CloseAllNetworkPeersSystemComponent::Reflect(ReflectContext* context)
+    void CloseAllPeersSystemComponent::Reflect(ReflectContext* c)
     {
-        if (auto sc = azrtti_cast<SerializeContext*>(context))
+        if (auto sc = azrtti_cast<SerializeContext*>(c))
         {
-            sc->Class<CloseAllNetworkPeersSystemComponent,
-                    Component>()
-                ->Version(0)
-                ->SerializerForEmptyClass();
+            sc->Class<CloseAllPeersSystemComponent, Component>()
+                ->Version(0)->SerializerForEmptyClass();
 
             if (auto ec = sc->GetEditContext())
             {
-                ec->Class<CloseAllNetworkPeersSystemComponent>("CloseAllNetworkPeers",
-                    "[Description of functionality provided by this System Component]")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ;
+                ec->Class<CloseAllPeersSystemComponent>(
+                    "Close All Network Peers",
+                    "[Closes all connected network peers]")
+                ->ClassElement(
+                    Edit::ClassElements::EditorData, "")
+                ->Attribute(Edit::Attributes::
+                    AppearsInAddComponentMenu,AZ_CRC("System"))
+                ->Attribute(Edit::Attributes::AutoExpand, true);
             }
         }
     }
 
-    void CloseAllNetworkPeersSystemComponent::GetProvidedServices(
+    void CloseAllPeersSystemComponent::GetProvidedServices(
         AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("CloseAllNetworkPeersService"));
+        provided.push_back(AZ_CRC("CloseAllPeersService"));
     }
 
-    void CloseAllNetworkPeersSystemComponent::GetIncompatibleServices(
-        AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    void CloseAllPeersSystemComponent::GetIncompatibleServices(
+        AZ::ComponentDescriptor::DependencyArrayType& incompat)
     {
-        incompatible.push_back(AZ_CRC("CloseAllNetworkPeersService"));
+        incompat.push_back(AZ_CRC("CloseAllPeersService"));
     }
 
-    void CloseAllNetworkPeersSystemComponent::GetRequiredServices(
+    void CloseAllPeersSystemComponent::GetRequiredServices(
         AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         (void)required;
     }
 
-    void CloseAllNetworkPeersSystemComponent::GetDependentServices(
+    void CloseAllPeersSystemComponent::GetDependentServices(
         AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
         (void)dependent;
     }
 
-    void CloseAllNetworkPeersSystemComponent::CloseAllNetworkPeers()
+    void CloseAllPeersSystemComponent::CloseAllNetworkPeers()
     {
         AZ_Printf("Gem", "CloseAllNetworkPeers called");
 
         EBUS_EVENT(CloseAllRequestBus, CloseAll);
     }
 
-    void CloseAllNetworkPeersSystemComponent::OnSessionHosted(
-        GridMate::GridSession* session)
+    void CloseAllPeersSystemComponent::Activate()
     {
-        m_session = session;
+        CloseAllNetworkPeersRequestBus::Handler::BusConnect();
+        GameEntityContextEventBus::Handler::BusConnect();
+    }
 
+    void CloseAllPeersSystemComponent::Deactivate()
+    {
+        CloseAllNetworkPeersRequestBus::Handler::BusDisconnect();
+        GameEntityContextEventBus::Handler::BusDisconnect();
+    }
+
+    void CloseAllPeersSystemComponent::OnGameEntitiesStarted()
+    {
         if (m_workerEntity == nullptr)
         {
             m_workerEntity = aznew AZ::Entity("Game Player");
@@ -91,31 +101,8 @@ namespace CloseAllNetworkPeers
         }
     }
 
-    void CloseAllNetworkPeersSystemComponent::OnSessionDelete(
-        GridMate::GridSession* session)
+    void CloseAllPeersSystemComponent::OnGameEntitiesReset()
     {
-        m_session = nullptr;
-    }
-
-    void CloseAllNetworkPeersSystemComponent::Activate()
-    {
-        CloseAllNetworkPeersRequestBus::Handler::BusConnect();
-        CrySystemEventBus::Handler::BusConnect();
-    }
-
-    void CloseAllNetworkPeersSystemComponent::Deactivate()
-    {
-        CloseAllNetworkPeersRequestBus::Handler::BusDisconnect();
-        GridMate::SessionEventBus::Handler::BusDisconnect();
-        CrySystemEventBus::Handler::BusDisconnect();
-        m_session = nullptr;
-    }
-
-    void CloseAllNetworkPeersSystemComponent::
-    OnCrySystemInitialized(ISystem& system, const SSystemInitParams&)
-    {
-        GridMate::SessionEventBus::Handler::BusConnect(
-            system.GetINetwork()->GetGridMate());
-        CrySystemEventBus::Handler::BusDisconnect();
+        m_workerEntity = nullptr;
     }
 }

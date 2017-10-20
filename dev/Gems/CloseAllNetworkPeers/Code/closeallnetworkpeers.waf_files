@@ -7,7 +7,7 @@
     },
     "auto": {
         "Include": [
-            "Include/CloseAllNetworkPeers/CloseAllNetworkPeersBus.h"
+            "Include/CloseAllNetworkPeers/CloseAllNetworkPeersRequestBus.h"
         ],
         "Source": [
             "Source/CloseAllNetworkPeersModule.cpp",

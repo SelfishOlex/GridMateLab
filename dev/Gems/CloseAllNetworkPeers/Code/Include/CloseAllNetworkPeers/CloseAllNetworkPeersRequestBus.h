@@ -1,6 +1,4 @@
-
 #pragma once
-
 #include <AzCore/EBus/EBus.h>
 
 namespace CloseAllNetworkPeers
@@ -12,10 +10,13 @@ namespace CloseAllNetworkPeers
         virtual ~CloseAllNetworkPeersRequests() = default;
 
         // EBusTraits overrides
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        static const AZ::EBusHandlerPolicy HandlerPolicy =
+            AZ::EBusHandlerPolicy::Single;
+        static const AZ::EBusAddressPolicy AddressPolicy =
+            AZ::EBusAddressPolicy::Single;
 
         virtual void CloseAllNetworkPeers() = 0;
     };
-    using CloseAllNetworkPeersRequestBus = AZ::EBus<CloseAllNetworkPeersRequests>;
+    using CloseAllNetworkPeersRequestBus =
+        AZ::EBus<CloseAllNetworkPeersRequests>;
 } // namespace CloseAllNetworkPeers

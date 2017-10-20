@@ -9,8 +9,11 @@ namespace CloseAllNetworkPeers
         : public AZ::EBusTraits
     {
     public:
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        virtual ~CloseAllRequestInterface() = default;
+        static const AZ::EBusHandlerPolicy HandlerPolicy =
+            AZ::EBusHandlerPolicy::Single;
+        static const AZ::EBusAddressPolicy AddressPolicy =
+            AZ::EBusAddressPolicy::Single;
 
         virtual void CloseAll() = 0;
     };
@@ -53,9 +56,11 @@ namespace CloseAllNetworkPeers
             GridMate::ReplicaChunkPtr chunk) override;
         void UnbindFromNetwork() override;
 
-        bool OnCloseAll(const GridMate::RpcContext& rc);
-
+        // TickBus
         void OnTick(float, AZ::ScriptTimePoint time) override;
+
+        // RPC callback
+        bool OnCloseAll(const GridMate::RpcContext& rc);
 
     private:
         class Chunk;
@@ -63,5 +68,6 @@ namespace CloseAllNetworkPeers
 
         bool m_isShuttinDown = false;
         AZ::u32 m_shutdownCountdown = 0;
+        AZ::u32 m_ticksBeforeShutdown = 20;
     };
 }

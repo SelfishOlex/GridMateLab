@@ -2,10 +2,10 @@
     "GemFormatVersion": 4,
     "Uuid": "2fe33254d36e4e7f9b0344a051833956",
     "Name": "CloseAllNetworkPeers",
-    "DisplayName": "CloseAllNetworkPeers",
+    "DisplayName": "Close All Network Peers",
     "Version": "0.1.0",
-    "Summary": "Closes all the clients and the server with a single command from any of the connected network peers. Usage: closeall",
-    "Tags": ["Untagged"],
+    "Summary": "Closes all the clients and the server with a single console command from any of the connected network peers. Usage: closeallnetworkpeers. Do not enable this gem in production! It is meant for testing only!!!",
+    "Tags": ["Network", "Testing"],
     "IconPath": "preview.png",
     "Modules": [
         {

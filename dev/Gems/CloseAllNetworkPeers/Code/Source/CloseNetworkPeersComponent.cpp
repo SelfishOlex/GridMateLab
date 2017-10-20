@@ -85,7 +85,6 @@ void CloseNetworkPeersComponent::GetDependentServices(
 void CloseNetworkPeersComponent::Activate()
 {
     m_isShuttinDown = false;
-    m_shutdownCountdown = 20;
 
     CloseAllRequestBus::Handler::BusConnect();
     TickBus::Handler::BusConnect();
@@ -97,13 +96,10 @@ void CloseNetworkPeersComponent::Deactivate()
     TickBus::Handler::BusDisconnect();
 
     m_isShuttinDown = false;
-    m_shutdownCountdown = 20;
 }
 
 void CloseNetworkPeersComponent::CloseAll()
 {
-    AZ_Printf("GEM", "CloseNetworkPeersComponent::CloseAll");
-
     if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
     {
         chunk->m_closeAllRpc();
@@ -134,20 +130,14 @@ void CloseNetworkPeersComponent::UnbindFromNetwork()
 bool CloseNetworkPeersComponent::OnCloseAll(
     const GridMate::RpcContext& /*rc*/)
 {
-    AZ_Printf("GEM", "Rpc called!");
+    m_shutdownCountdown = m_ticksBeforeShutdown;
     m_isShuttinDown = true;
     return true;
 }
 
-void CloseNetworkPeersComponent::OnTick(float,
-    AZ::ScriptTimePoint time)
+void CloseNetworkPeersComponent::OnTick(float, ScriptTimePoint)
 {
-    if (m_isShuttinDown)
-    {
-        m_shutdownCountdown--;
-    }
-
-    if (m_shutdownCountdown == 0)
+    if (m_isShuttinDown && m_shutdownCountdown-- == 0)
     {
         ISystem* system = nullptr;
         EBUS_EVENT_RESULT(system,

@@ -11,5 +11,8 @@ namespace CloseAllNetworkPeers
         void UnregisterCVars();
 
         static void CloseAll(IConsoleCmdArgs* args);
+
+    private:
+        const std::string m_commandName = "closeallnetworkpeers";
     };
 }
