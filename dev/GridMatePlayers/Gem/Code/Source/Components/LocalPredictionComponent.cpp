@@ -64,10 +64,9 @@ void LocalPredictionComponent::Activate()
 {
     const auto self = GetEntityId();
     LocalPredictionRequestBus::Handler::BusConnect(self);
+    TransformNotificationBus::Handler::BusConnect(self);
 
-    if (NetQuery::IsEntityAuthoritative(GetEntityId()))
-        TransformNotificationBus::Handler::BusConnect(self);
-    else
+    if (!NetQuery::IsEntityAuthoritative(GetEntityId()))
         TickBus::Handler::BusConnect();
 
     m_isActive = true;
@@ -77,10 +76,9 @@ void LocalPredictionComponent::Deactivate()
 {
     m_isActive = false;
     LocalPredictionRequestBus::Handler::BusDisconnect();
+    TransformNotificationBus::Handler::BusDisconnect();
 
-    if (NetQuery::IsEntityAuthoritative(GetEntityId()))
-        TransformNotificationBus::Handler::BusDisconnect();
-    else
+    if (!NetQuery::IsEntityAuthoritative(GetEntityId()))
         TickBus::Handler::BusDisconnect();
 }
 
@@ -128,17 +126,25 @@ void LocalPredictionComponent::OnTransformChanged(
 {
     if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
     {
-        const auto diff =
-            chunk->m_serverCheckpoint.Get().m_vector -
-            world.GetTranslation();
-        if (diff.GetLengthSq() < m_allowedDeviation) return;
+        if (chunk->IsMaster())
+        {
+            const auto diff =
+                chunk->m_serverCheckpoint.Get().m_vector -
+                world.GetTranslation();
+            if (diff.GetLengthSq() < m_allowedDeviation) return;
 
-        AZ_Printf("Book", "server (-- %f --) @ %d",
-            static_cast<float>(world.GetTranslation().GetY()),
-            GetTime());
+            AZ_Printf("Book", "server (-- %f --) @ %d",
+                static_cast<float>(world.GetTranslation().GetY()),
+                GetTime());
 
-        chunk->m_serverCheckpoint.Set(
+            chunk->m_serverCheckpoint.Set(
             { world.GetTranslation(), GetTime() });
+        }
+        else
+        {
+            m_history.AddDataPoint(world.GetTranslation(),
+                GetTime());
+        }
     }
 }
 
