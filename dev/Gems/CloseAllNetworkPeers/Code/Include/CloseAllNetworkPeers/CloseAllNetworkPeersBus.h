@@ -9,13 +9,13 @@ namespace CloseAllNetworkPeers
         : public AZ::EBusTraits
     {
     public:
-        //////////////////////////////////////////////////////////////////////////
+        virtual ~CloseAllNetworkPeersRequests() = default;
+
         // EBusTraits overrides
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-        //////////////////////////////////////////////////////////////////////////
 
-        // Put your public methods here
+        virtual void CloseAllNetworkPeers() = 0;
     };
     using CloseAllNetworkPeersRequestBus = AZ::EBus<CloseAllNetworkPeersRequests>;
 } // namespace CloseAllNetworkPeers

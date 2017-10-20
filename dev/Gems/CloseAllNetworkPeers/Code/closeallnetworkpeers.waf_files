@@ -11,6 +11,10 @@
         ],
         "Source": [
             "Source/CloseAllNetworkPeersModule.cpp",
+            "Source/ConsoleCommandCVars.cpp",
+            "Source/ConsoleCommandCVars.h",
+            "Source/CloseNetworkPeersComponent.cpp",
+            "Source/CloseNetworkPeersComponent.h",
             "Source/CloseAllNetworkPeersSystemComponent.cpp",
             "Source/CloseAllNetworkPeersSystemComponent.h"
         ]

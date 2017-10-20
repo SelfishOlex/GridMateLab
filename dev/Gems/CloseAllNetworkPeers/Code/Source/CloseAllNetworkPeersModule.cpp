@@ -1,12 +1,10 @@
-
 #include "StdAfx.h"
 #include <platform_impl.h>
-
 #include <AzCore/Memory/SystemAllocator.h>
-
 #include "CloseAllNetworkPeersSystemComponent.h"
-
 #include <IGem.h>
+#include <ConsoleCommandCVars.h>
+#include <CloseNetworkPeersComponent.h>
 
 namespace CloseAllNetworkPeers
 {
@@ -23,6 +21,7 @@ namespace CloseAllNetworkPeers
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             m_descriptors.insert(m_descriptors.end(), {
                 CloseAllNetworkPeersSystemComponent::CreateDescriptor(),
+                CloseNetworkPeersComponent::CreateDescriptor()
             });
         }
 
@@ -35,10 +34,34 @@ namespace CloseAllNetworkPeers
                 azrtti_typeid<CloseAllNetworkPeersSystemComponent>(),
             };
         }
+
+        void OnCrySystemInitialized(ISystem& system,
+            const SSystemInitParams& systemInitParams) override
+        {
+            CryHooksModule::OnCrySystemInitialized(
+                system, systemInitParams);
+            m_cvars.RegisterCVars();
+        }
+
+        void OnSystemEvent(ESystemEvent event,
+            UINT_PTR, UINT_PTR) override
+        {
+            switch (event)
+            {
+            case ESYSTEM_EVENT_FULL_SHUTDOWN:
+            case ESYSTEM_EVENT_FAST_SHUTDOWN:
+                m_cvars.UnregisterCVars();
+            default:
+                AZ_UNUSED(event);
+            }
+        }
+
+        ConsoleCommandCVars m_cvars;
     };
 }
 
 // DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
 // The first parameter should be GemName_GemIdLower
 // The second should be the fully qualified name of the class above
-AZ_DECLARE_MODULE_CLASS(CloseAllNetworkPeers_2fe33254d36e4e7f9b0344a051833956, CloseAllNetworkPeers::CloseAllNetworkPeersModule)
+AZ_DECLARE_MODULE_CLASS(CloseAllNetworkPeers_2fe33254d36e4e7f9b0344a051833956,
+    CloseAllNetworkPeers::CloseAllNetworkPeersModule)
