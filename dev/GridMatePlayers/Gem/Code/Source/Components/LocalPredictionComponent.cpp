@@ -132,26 +132,22 @@ void LocalPredictionComponent::OnTransformChanged(
     {
         if (chunk->IsMaster())
         {
-            if (world.GetTranslation() !=
-                chunk->m_serverCheckpoint.Get().m_vector)
+            auto& pos = chunk->m_serverCheckpoint.Get().m_vector;
+            if (pos.GetDistance(world.GetTranslation()) > 0.01f)
             {
                 AZ_Printf("Book", "server (-- %f --) @ %d",
                     static_cast<float>(
                         world.GetTranslation().GetY()),
                     GetTime());
-            }
 
-            chunk->m_serverCheckpoint.Set(
-                { world.GetTranslation(), GetTime() });
+                chunk->m_serverCheckpoint.Set(
+                    { world.GetTranslation(), GetTime() });
+            }
         }
         else if (IsLocallyControlled())
         {
             m_history.AddDataPoint(world.GetTranslation(),
                 GetTime());
-        }
-        else
-        {
-            TransformNotificationBus::Handler::BusDisconnect();
         }
     }
 }
@@ -165,10 +161,6 @@ void LocalPredictionComponent::OnTick(float deltaTime,
             LmbrCentral::CryCharacterPhysicsRequestBus,
             RequestVelocity,
             Vector3::CreateAxisY(m_speed), 0);
-    }
-    else
-    {
-        TickBus::Handler::BusDisconnect();
     }
 }
 
@@ -204,35 +196,47 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
         const auto& serverPos = value.m_vector;
         const auto serverTime = value.m_time;
 
-        if (m_history.HasHistory() && IsLocallyControlled())
+        if (IsLocallyControlled())
         {
-            const auto backThen =
-                m_history.GetPositionAt(serverTime);
-            const auto diff = backThen - serverPos;
-            const auto diffLength = diff.GetLength();
-
-            const auto allowedDeviation =
-                (GetTime() - serverTime) * 0.001f *
-                AZStd::GetMax(m_speed, .5f);
-
-            if (diffLength > allowedDeviation)
+            if (m_history.HasHistory())
             {
-                m_history.DeleteAfter(serverTime);
-                m_history.AddDataPoint(serverPos, serverTime);
+                const auto backThen =
+                    m_history.GetPositionAt(serverTime);
+                const auto diff = backThen - serverPos;
+                const auto diffLength = diff.GetLength();
 
+                const auto allowedDeviation =
+                    (GetTime() - serverTime) * 0.001f *
+                    AZStd::GetMax(m_speed, .5f);
+
+                if (diffLength > allowedDeviation)
+                {
+                    m_history.DeleteAfter(serverTime);
+                    m_history.AddDataPoint(serverPos, serverTime);
+
+                    EBUS_EVENT_ID(GetEntityId(), TransformBus,
+                        SetWorldTranslation, serverPos);
+
+                    AZ_Printf("Book", "new (-- %f --) @%d; dy %f,"
+                        " dev %f, speed %f",
+                        static_cast<float>(serverPos.GetY()),
+                        GetTime(),
+                        static_cast<float>(diff.GetY()),
+                        allowedDeviation, m_speed);
+                }
+            }
+            else
+            {
                 EBUS_EVENT_ID(GetEntityId(), TransformBus,
                     SetWorldTranslation, serverPos);
-
-                AZ_Printf("Book", "new (-- %f --) @%d; dy %f,"
-                    " dev %f, speed %f",
-                    static_cast<float>(serverPos.GetY()),
-                    GetTime(),
-                    static_cast<float>(diff.GetY()),
-                    allowedDeviation, m_speed);
             }
         }
         else
         {
+            AZ_Printf("Book", "interpolate (-- %f --) @%d",
+                static_cast<float>(serverPos.GetY()),
+                serverTime);
+
             m_history.AddDataPoint(serverPos, serverTime);
             EBUS_EVENT_ID(GetEntityId(), InterpolationBus,
                 SetWorldTranslation, serverPos, serverTime);
