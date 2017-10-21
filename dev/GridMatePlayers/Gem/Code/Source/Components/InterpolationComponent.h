@@ -11,12 +11,10 @@ namespace GridMatePlayers
         : public AZ::Component
         , public AZ::TickBus::Handler
         , public InterpolationBus::Handler
-        , AzFramework::NetBindable
     {
     public:
         AZ_COMPONENT(InterpolationComponent,
-            "{B4B17EC8-E4AA-461A-B6D1-B74614EECE2F}",
-            NetBindable);
+            "{B4B17EC8-E4AA-461A-B6D1-B74614EECE2F}");
 
         static void Reflect(AZ::ReflectContext* reflection);
 
@@ -34,18 +32,9 @@ namespace GridMatePlayers
             const AZ::Vector3& desired, AZ::u32 time) override;
         AZ::Vector3 GetWorldTranslation() override;
 
-        //  NetBindable
-        GridMate::ReplicaChunkPtr GetNetworkBinding() override;
-        void SetNetworkBinding(
-            GridMate::ReplicaChunkPtr chunk) override;
-        void UnbindFromNetwork() override;
-
     private:
         bool m_enabled = true;
         AZ::u32 m_delayForOthers = 500; // ms
         MovementHistory m_history;
-
-        class Chunk;
-        GridMate::ReplicaChunkPtr m_chunk;
     };
 }

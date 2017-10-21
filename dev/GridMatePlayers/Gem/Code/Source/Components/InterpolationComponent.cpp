@@ -5,26 +5,12 @@
 #include <AzCore/Component/TransformBus.h>
 #include <GridMatePlayers/PlayerBodyBus.h>
 #include <GridMatePlayers/NetworkTimeRequestBus.h>
-#include <GridMate/Replica/ReplicaFunctions.h>
 #include <AzFramework/Network/NetBindingHandlerBus.h>
 
 using namespace AZ;
 using namespace AzFramework;
 using namespace GridMate;
 using namespace GridMatePlayers;
-
-class InterpolationComponent::Chunk : public ReplicaChunk
-{
-public:
-    GM_CLASS_ALLOCATOR(Chunk);
-
-    bool IsReplicaMigratable() override { return true; }
-
-    static const char* GetChunkName()
-    {
-        return "InterpolationComponent::Chunk";
-    }
-};
 
 void InterpolationComponent::Reflect(ReflectContext* reflection)
 {
@@ -57,13 +43,6 @@ void InterpolationComponent::Reflect(ReflectContext* reflection)
                     "Delay For Others",
                     "Interpolation delay for other clients")
                     ->Attribute(Edit::Attributes::Suffix, " ms");
-    }
-
-    auto& descTable = ReplicaChunkDescriptorTable::Get();
-    if (!descTable.FindReplicaChunkDescriptor(
-        ReplicaChunkClassId(Chunk::GetChunkName())))
-    {
-        descTable.RegisterChunkType<Chunk>();
     }
 }
 
@@ -134,24 +113,4 @@ AZ::Vector3 InterpolationComponent::GetWorldTranslation()
     EBUS_EVENT_ID_RESULT(v, GetEntityId(), AZ::TransformBus,
         GetWorldTranslation);
     return v;
-}
-
-ReplicaChunkPtr InterpolationComponent::GetNetworkBinding()
-{
-    m_chunk = GridMate::CreateReplicaChunk<Chunk>();
-    m_chunk->SetHandler(this);
-    return m_chunk;
-}
-
-void InterpolationComponent::SetNetworkBinding(
-    ReplicaChunkPtr chunk)
-{
-    m_chunk = chunk;
-    m_chunk->SetHandler(this);
-}
-
-void InterpolationComponent::UnbindFromNetwork()
-{
-    m_chunk->SetHandler(nullptr);
-    m_chunk = nullptr;
 }
