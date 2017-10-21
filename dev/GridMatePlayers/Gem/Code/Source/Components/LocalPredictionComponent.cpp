@@ -3,7 +3,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include "GridMate/Replica/ReplicaFunctions.h"
 #include "AzFramework/Network/NetBindingHandlerBus.h"
-#include "AzCore/Component/TransformBus.h"
 #include "GridMate/Replica/ReplicaMgr.h"
 #include "LmbrCentral/Physics/CryCharacterPhysicsBus.h"
 #include <GridMatePlayers/NetworkTimeRequestBus.h>
@@ -79,8 +78,8 @@ void LocalPredictionComponent::Activate()
 void LocalPredictionComponent::Deactivate()
 {
     m_isActive = false;
-    LocalPredictionRequestBus::Handler::BusDisconnect();
 
+    LocalPredictionRequestBus::Handler::BusDisconnect();
     TransformNotificationBus::Handler::BusDisconnect();
 
     if (!NetQuery::IsEntityAuthoritative(GetEntityId()))
@@ -143,15 +142,16 @@ void LocalPredictionComponent::OnTransformChanged(
             }
 
             chunk->m_serverCheckpoint.Set(
-            { world.GetTranslation(), GetTime() });
+                { world.GetTranslation(), GetTime() });
+        }
+        else if (IsLocallyControlled())
+        {
+            m_history.AddDataPoint(world.GetTranslation(),
+                GetTime());
         }
         else
         {
-            if (IsLocallyControlled())
-            {
-                m_history.AddDataPoint(world.GetTranslation(),
-                    GetTime());
-            }
+            TransformNotificationBus::Handler::BusDisconnect();
         }
     }
 }
@@ -165,6 +165,10 @@ void LocalPredictionComponent::OnTick(float deltaTime,
             LmbrCentral::CryCharacterPhysicsRequestBus,
             RequestVelocity,
             Vector3::CreateAxisY(m_speed), 0);
+    }
+    else
+    {
+        TickBus::Handler::BusDisconnect();
     }
 }
 
@@ -216,7 +220,7 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
                 m_history.DeleteAfter(serverTime);
                 m_history.AddDataPoint(serverPos, serverTime);
 
-                EBUS_EVENT_ID(GetEntityId(), InterpolationBus,
+                EBUS_EVENT_ID(GetEntityId(), TransformBus,
                     SetWorldTranslation, serverPos);
 
                 AZ_Printf("Book", "new (-- %f --) @%d; dy %f,"
@@ -230,8 +234,8 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
         else
         {
             m_history.AddDataPoint(serverPos, serverTime);
-            EBUS_EVENT_ID(GetEntityId(), TransformBus,
-                SetWorldTranslation, serverPos);
+            EBUS_EVENT_ID(GetEntityId(), InterpolationBus,
+                SetWorldTranslation, serverPos, serverTime);
         }
     }
 }

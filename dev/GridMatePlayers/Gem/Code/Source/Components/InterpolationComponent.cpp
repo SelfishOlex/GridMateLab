@@ -4,9 +4,27 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Component/TransformBus.h>
 #include <GridMatePlayers/PlayerBodyBus.h>
+#include <GridMatePlayers/NetworkTimeRequestBus.h>
+#include <GridMate/Replica/ReplicaFunctions.h>
+#include <AzFramework/Network/NetBindingHandlerBus.h>
 
 using namespace AZ;
+using namespace AzFramework;
+using namespace GridMate;
 using namespace GridMatePlayers;
+
+class InterpolationComponent::Chunk : public ReplicaChunk
+{
+public:
+    GM_CLASS_ALLOCATOR(Chunk);
+
+    bool IsReplicaMigratable() override { return true; }
+
+    static const char* GetChunkName()
+    {
+        return "InterpolationComponent::Chunk";
+    }
+};
 
 void InterpolationComponent::Reflect(ReflectContext* reflection)
 {
@@ -16,8 +34,6 @@ void InterpolationComponent::Reflect(ReflectContext* reflection)
             ->Version(1)
             ->Field("Enable Interpolation",
                 &InterpolationComponent::m_enabled)
-            ->Field("Delay For Self",
-                &InterpolationComponent::m_delayForSelf)
             ->Field("Delay For Others",
                 &InterpolationComponent::m_delayForOthers);
 
@@ -37,24 +53,25 @@ void InterpolationComponent::Reflect(ReflectContext* reflection)
                     &InterpolationComponent::m_enabled,
                     "Enable Interpolation", "")
                 ->DataElement(nullptr,
-                    &InterpolationComponent::m_delayForSelf,
-                    "Delay For Self",
-                    "Interpolation delay for the local client")
-                    ->Attribute(Edit::Attributes::Suffix, " sec")
-                ->DataElement(nullptr,
                     &InterpolationComponent::m_delayForOthers,
                     "Delay For Others",
                     "Interpolation delay for other clients")
-                    ->Attribute(Edit::Attributes::Suffix, " sec");
+                    ->Attribute(Edit::Attributes::Suffix, " ms");
+    }
+
+    auto& descTable = ReplicaChunkDescriptorTable::Get();
+    if (!descTable.FindReplicaChunkDescriptor(
+        ReplicaChunkClassId(Chunk::GetChunkName())))
+    {
+        descTable.RegisterChunkType<Chunk>();
     }
 }
 
 void InterpolationComponent::Activate()
 {
-    m_hasDesired = false;
-    m_leftTime = GetLocalDelay();
     InterpolationBus::Handler::BusConnect(GetEntityId());
-    if (m_enabled)
+    if (!NetQuery::IsEntityAuthoritative(GetEntityId())
+        && m_enabled)
     {
         TickBus::Handler::BusConnect();
     }
@@ -62,64 +79,55 @@ void InterpolationComponent::Activate()
 
 void InterpolationComponent::Deactivate()
 {
-    m_hasDesired = false;
-    m_leftTime = GetLocalDelay();
     InterpolationBus::Handler::BusDisconnect();
-    if (m_enabled)
+    if (!NetQuery::IsEntityAuthoritative(GetEntityId())
+        && m_enabled)
     {
         TickBus::Handler::BusDisconnect();
     }
 }
 
-void InterpolationComponent::OnTick(float deltaTime,
-    ScriptTimePoint)
+bool InterpolationComponent::IsLocallyControlled() const
 {
-    if (!m_hasDesired) return;
-
-    auto v = Vector3::CreateZero();
-    EBUS_EVENT_ID_RESULT(v, GetEntityId(),
-        AZ::TransformBus, GetWorldTranslation);
-
-    const auto portion = (GetLocalDelay() - m_leftTime) / GetLocalDelay();
-    const auto updated = v.Lerp(m_desired, portion);
-
-    EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus,
-        SetWorldTranslation, updated);
-
-    m_leftTime -= deltaTime;
-    if (m_leftTime <= 0)
-    {
-        m_leftTime = 0.f;
-        m_hasDesired = false;
-    }
+    auto localClient = false;
+    EBUS_EVENT_ID_RESULT(localClient, GetEntityId(),
+        PlayerBodyRequestBus, IsAttachedToLocalClient);
+    return localClient;
 }
 
-void InterpolationComponent::OnTransformChanged(
-    const AZ::Transform&, const AZ::Transform&)
+void InterpolationComponent::OnTick(float, ScriptTimePoint)
 {
+    if (IsLocallyControlled() && m_history.HasHistory())
+    {
+        AZ::u32 localTime = 0;
+        EBUS_EVENT_RESULT(localTime, NetworkTimeRequestBus,
+            GetLocalTime);
+        auto updated = m_history.GetPositionAt(
+            localTime - m_delayForOthers);
+        EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus,
+            SetWorldTranslation, updated);
+    }
 }
 
 void InterpolationComponent::SetWorldTranslation(
-    const Vector3& desired)
+    const Vector3& desired, AZ::u32 time)
 {
     if (m_enabled)
-    {
-        m_hasDesired = true;
-        m_desired = desired;
-        m_leftTime = GetLocalDelay();
-    }
+        m_history.AddDataPoint(desired, time);
     else
-    {
         EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus,
             SetWorldTranslation, desired);
-    }
 }
 
 AZ::Vector3 InterpolationComponent::GetWorldTranslation()
 {
-    if (m_enabled && m_hasDesired)
+    if (m_enabled && m_history.HasHistory())
     {
-        return m_desired;
+        AZ::u32 localTime = 0;
+        EBUS_EVENT_RESULT(localTime, NetworkTimeRequestBus,
+            GetLocalTime);
+
+        return m_history.GetPositionAt(localTime);
     }
 
     auto v = Vector3::CreateZero();
@@ -128,11 +136,22 @@ AZ::Vector3 InterpolationComponent::GetWorldTranslation()
     return v;
 }
 
-float InterpolationComponent::GetLocalDelay()
+ReplicaChunkPtr InterpolationComponent::GetNetworkBinding()
 {
-    auto localClient = false;
-    EBUS_EVENT_ID_RESULT(localClient, GetEntityId(),
-        PlayerBodyRequestBus, IsAttachedToLocalClient);
+    m_chunk = GridMate::CreateReplicaChunk<Chunk>();
+    m_chunk->SetHandler(this);
+    return m_chunk;
+}
 
-    return localClient ? m_delayForSelf : m_delayForOthers;
+void InterpolationComponent::SetNetworkBinding(
+    ReplicaChunkPtr chunk)
+{
+    m_chunk = chunk;
+    m_chunk->SetHandler(this);
+}
+
+void InterpolationComponent::UnbindFromNetwork()
+{
+    m_chunk->SetHandler(nullptr);
+    m_chunk = nullptr;
 }

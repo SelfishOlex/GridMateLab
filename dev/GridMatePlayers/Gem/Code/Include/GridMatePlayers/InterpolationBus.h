@@ -18,9 +18,8 @@ namespace GridMatePlayers
             AZ::EBusAddressPolicy::ById;
         using BusIdType = AZ::EntityId;
 
-        // Put your public methods here
         virtual void SetWorldTranslation(
-            const AZ::Vector3& desired) = 0;
+            const AZ::Vector3& desired, AZ::u32 time) = 0;
 
         virtual AZ::Vector3 GetWorldTranslation() = 0;
     };

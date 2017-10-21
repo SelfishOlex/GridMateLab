@@ -2,7 +2,8 @@
 #include <AzCore/Component/Component.h>
 #include "AzCore/Component/TickBus.h"
 #include <GridMatePlayers/InterpolationBus.h>
-#include <AzCore/Component/TransformBus.h>
+#include <Utils/MovementHistory.h>
+#include <AzFramework/Network/NetBindable.h>
 
 namespace GridMatePlayers
 {
@@ -10,7 +11,7 @@ namespace GridMatePlayers
         : public AZ::Component
         , public AZ::TickBus::Handler
         , public InterpolationBus::Handler
-        , public AZ::TransformNotificationBus::Handler
+        , AzFramework::NetBindable
     {
     public:
         AZ_COMPONENT(InterpolationComponent,
@@ -21,29 +22,29 @@ namespace GridMatePlayers
     protected:
         void Activate() override;
         void Deactivate() override;
+        bool IsLocallyControlled() const;
 
         // TickBus
         void OnTick(float deltaTime, AZ::ScriptTimePoint time)
             override;
 
-        // TransformNotificationBus
-        void OnTransformChanged(const AZ::Transform&,
-            const AZ::Transform&) override;
-
         // InterpolationBus
         void SetWorldTranslation(
-            const AZ::Vector3& desired) override;
+            const AZ::Vector3& desired, AZ::u32 time) override;
         AZ::Vector3 GetWorldTranslation() override;
+
+        //  NetBindable
+        GridMate::ReplicaChunkPtr GetNetworkBinding() override;
+        void SetNetworkBinding(
+            GridMate::ReplicaChunkPtr chunk) override;
+        void UnbindFromNetwork() override;
 
     private:
         bool m_enabled = true;
+        AZ::u32 m_delayForOthers = 500; // ms
+        MovementHistory m_history;
 
-        bool m_hasDesired = false;
-        AZ::Vector3 m_desired = AZ::Vector3::CreateZero();
-        float m_leftTime = 0.f;
-
-        float GetLocalDelay();
-        float m_delayForSelf = 0.2f;
-        float m_delayForOthers = 1.0f;
+        class Chunk;
+        GridMate::ReplicaChunkPtr m_chunk;
     };
 }
