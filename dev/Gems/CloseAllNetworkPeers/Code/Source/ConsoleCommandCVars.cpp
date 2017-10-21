@@ -2,6 +2,7 @@
 #include "ConsoleCommandCVars.h"
 #include <ISystem.h>
 #include <CloseAllNetworkPeers/CloseAllNetworkPeersRequestBus.h>
+#include <CloseAllNetworkPeers/ShutdownApplication.h>
 
 using namespace CloseAllNetworkPeers;
 
@@ -24,6 +25,13 @@ void ConsoleCommandCVars::UnregisterCVars()
 
 void ConsoleCommandCVars::CloseAll(IConsoleCmdArgs* /*args*/)
 {
-    EBUS_EVENT(CloseAllNetworkPeersRequestBus,
-        CloseAllNetworkPeers);
+    if (CloseAllNetworkPeersRequestBus::FindFirstHandler())
+    {
+        EBUS_EVENT(CloseAllNetworkPeersRequestBus,
+            CloseAllNetworkPeers);
+    }
+    else
+    {
+        ShutdownApplication();
+    }
 }

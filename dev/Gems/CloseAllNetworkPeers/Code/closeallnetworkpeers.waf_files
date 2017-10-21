@@ -7,7 +7,8 @@
     },
     "auto": {
         "Include": [
-            "Include/CloseAllNetworkPeers/CloseAllNetworkPeersRequestBus.h"
+            "Include/CloseAllNetworkPeers/CloseAllNetworkPeersRequestBus.h",
+            "Include/CloseAllNetworkPeers/ShutdownApplication.h"
         ],
         "Source": [
             "Source/CloseAllNetworkPeersModule.cpp",
@@ -16,7 +17,8 @@
             "Source/CloseNetworkPeersComponent.cpp",
             "Source/CloseNetworkPeersComponent.h",
             "Source/CloseAllNetworkPeersSystemComponent.cpp",
-            "Source/CloseAllNetworkPeersSystemComponent.h"
+            "Source/CloseAllNetworkPeersSystemComponent.h",
+            "Source/ShutdownApplication.cpp"
         ]
     }
 }

@@ -3,6 +3,8 @@
 #include <CloseAllNetworkPeers/CloseAllNetworkPeersRequestBus.h>
 #include <AzCore/Component/EntityBus.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
+#include <GridMate/Session/Session.h>
+#include <CrySystemBus.h>
 
 namespace CloseAllNetworkPeers
 {
@@ -11,6 +13,8 @@ namespace CloseAllNetworkPeers
         , protected CloseAllNetworkPeersRequestBus::Handler
         , public AZ::EntityBus::MultiHandler
         , AzFramework::GameEntityContextEventBus::Handler
+        , public GridMate::SessionEventBus::Handler
+        , public CrySystemEventBus::Handler
     {
     public:
         AZ_COMPONENT(CloseAllPeersSystemComponent,
@@ -39,7 +43,21 @@ namespace CloseAllNetworkPeers
         void OnGameEntitiesStarted() override;
         void OnGameEntitiesReset() override;
 
+        // SessionEventBus
+        void OnSessionHosted(
+            GridMate::GridSession* session) override;
+        void OnSessionDelete(GridMate::GridSession* session) override;
+        void OnSessionEnd(GridMate::GridSession* session) override;
+
+        // CrySystemEventBus
+        void OnCrySystemInitialized(ISystem&,
+            const SSystemInitParams&) override;
+
+        void CreateWorkerEntity();
+
     private:
         AZ::Entity* m_workerEntity = nullptr;
+        bool m_isHost = false;
+        bool m_isMapLoaded = false;
     };
 }

@@ -2,9 +2,8 @@
 #include "CloseNetworkPeersComponent.h"
 #include <AzCore/Serialization/EditContext.h>
 #include <GridMate/Replica/ReplicaFunctions.h>
-#include <CrySystemBus.h>
-#include <ISystem.h>
-#include <IConsole.h>
+#include <CloseAllNetworkPeers/ShutdownApplication.h>
+
 
 using namespace AZ;
 using namespace CloseAllNetworkPeers;
@@ -104,6 +103,10 @@ void CloseNetworkPeersComponent::CloseAll()
     {
         chunk->m_closeAllRpc();
     }
+    else
+    {
+        ShutdownApplication();
+    }
 }
 
 GridMate::ReplicaChunkPtr
@@ -139,12 +142,6 @@ void CloseNetworkPeersComponent::OnTick(float, ScriptTimePoint)
 {
     if (m_isShuttinDown && m_shutdownCountdown-- == 0)
     {
-        ISystem* system = nullptr;
-        EBUS_EVENT_RESULT(system,
-            CrySystemRequestBus, GetCrySystem);
-        if (system)
-        {
-            system->GetIConsole()->ExecuteString("quit");
-        }
+        ShutdownApplication();
     }
 }
