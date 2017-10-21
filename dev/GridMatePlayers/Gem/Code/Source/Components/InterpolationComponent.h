@@ -19,9 +19,9 @@ namespace GridMatePlayers
         static void Reflect(AZ::ReflectContext* reflection);
 
     protected:
+        // Component
         void Activate() override;
         void Deactivate() override;
-        bool IsLocallyControlled() const;
 
         // TickBus
         void OnTick(float deltaTime, AZ::ScriptTimePoint time)

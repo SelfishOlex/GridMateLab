@@ -66,17 +66,13 @@ void InterpolationComponent::Deactivate()
     }
 }
 
-bool InterpolationComponent::IsLocallyControlled() const
+void InterpolationComponent::OnTick(float, ScriptTimePoint)
 {
     auto localClient = false;
     EBUS_EVENT_ID_RESULT(localClient, GetEntityId(),
         PlayerBodyRequestBus, IsAttachedToLocalClient);
-    return localClient;
-}
 
-void InterpolationComponent::OnTick(float, ScriptTimePoint)
-{
-    if (!IsLocallyControlled() && m_history.HasHistory())
+    if (!localClient && m_history.HasHistory())
     {
         AZ::u32 localTime = 0;
         EBUS_EVENT_RESULT(localTime, NetworkTimeRequestBus,
