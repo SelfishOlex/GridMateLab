@@ -15,7 +15,8 @@ namespace GridMatePlayers
     {
     public:
         AZ_COMPONENT(InterpolationComponent,
-            "{B4B17EC8-E4AA-461A-B6D1-B74614EECE2F}");
+            "{B4B17EC8-E4AA-461A-B6D1-B74614EECE2F}",
+            NetBindable);
 
         static void Reflect(AZ::ReflectContext* reflection);
 
