@@ -237,7 +237,6 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
                 static_cast<float>(serverPos.GetY()),
                 serverTime);
 
-            m_history.AddDataPoint(serverPos, serverTime);
             EBUS_EVENT_ID(GetEntityId(), InterpolationBus,
                 SetWorldTranslation, serverPos, serverTime);
         }
