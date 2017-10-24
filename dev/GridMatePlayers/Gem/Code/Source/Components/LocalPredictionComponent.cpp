@@ -166,7 +166,7 @@ void LocalPredictionComponent::OnTick(float deltaTime,
 
 Vector3 LocalPredictionComponent::GetPosition() const
 {
-    auto v = AZ::Vector3::CreateZero();
+    Vector3 v = AZ::Vector3::CreateZero();
     EBUS_EVENT_ID_RESULT(v, GetEntityId(), TransformBus,
         GetWorldTranslation);
     return v;
@@ -181,7 +181,7 @@ AZ::u32 LocalPredictionComponent::GetTime() const
 
 bool LocalPredictionComponent::IsLocallyControlled() const
 {
-    auto localClient = false;
+    bool localClient = false;
     EBUS_EVENT_ID_RESULT(localClient, GetEntityId(),
         PlayerBodyRequestBus, IsAttachedToLocalClient);
     return localClient;
@@ -193,23 +193,21 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
     if (m_isActive &&
         !NetQuery::IsEntityAuthoritative(GetEntityId()))
     {
-        const auto& serverPos = value.m_vector;
-        const auto serverTime = value.m_time;
+        const Vector3& serverPos = value.m_vector;
+        const float serverTime = value.m_time;
 
         if (IsLocallyControlled())
         {
             if (m_history.HasHistory())
             {
-                const auto backThen =
+                const Vector3 backThen =
                     m_history.GetPositionAt(serverTime);
-                const auto diff = backThen - serverPos;
-                const auto diffLength = diff.GetLength();
-
-                const auto allowedDeviation =
+                const float diff = backThen.GetDistance(serverPos);
+                const float allowedDeviation =
                     (GetTime() - serverTime) * 0.001f *
                     AZStd::GetMax(m_speed, .5f);
 
-                if (diffLength > allowedDeviation)
+                if (diff > allowedDeviation)
                 {
                     m_history.DeleteAfter(serverTime);
                     m_history.AddDataPoint(serverPos, serverTime);
@@ -221,7 +219,7 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
                         " dev %f, speed %f",
                         static_cast<float>(serverPos.GetY()),
                         GetTime(),
-                        static_cast<float>(diff.GetY()),
+                        diff,
                         allowedDeviation, m_speed);
                 }
             }

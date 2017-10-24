@@ -23,7 +23,7 @@ void InterpolationComponent::Reflect(ReflectContext* reflection)
             ->Field("Delay For Others",
                 &InterpolationComponent::m_delayForOthers);
 
-        if (auto ec = sc->GetEditContext())
+        if (EditContext* ec = sc->GetEditContext())
             ec->Class<InterpolationComponent>(
                 "Local Interpolation",
                 "Smoothes out network updates")
@@ -68,7 +68,7 @@ void InterpolationComponent::Deactivate()
 
 void InterpolationComponent::OnTick(float, ScriptTimePoint)
 {
-    auto localClient = false;
+    bool localClient = false;
     EBUS_EVENT_ID_RESULT(localClient, GetEntityId(),
         PlayerBodyRequestBus, IsAttachedToLocalClient);
 
@@ -77,7 +77,7 @@ void InterpolationComponent::OnTick(float, ScriptTimePoint)
         AZ::u32 localTime = 0;
         EBUS_EVENT_RESULT(localTime, NetworkTimeRequestBus,
             GetLocalTime);
-        auto updated = m_history.GetPositionAt(
+        Vector3 updated = m_history.GetPositionAt(
             localTime - m_delayForOthers);
         EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus,
             SetWorldTranslation, updated);
@@ -105,7 +105,7 @@ AZ::Vector3 InterpolationComponent::GetWorldTranslation()
         return m_history.GetPositionAt(localTime);
     }
 
-    auto v = Vector3::CreateZero();
+    Vector3 v = Vector3::CreateZero();
     EBUS_EVENT_ID_RESULT(v, GetEntityId(), AZ::TransformBus,
         GetWorldTranslation);
     return v;

@@ -24,8 +24,7 @@ namespace GridMatePlayers
         void Deactivate() override;
 
         // TickBus
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time)
-            override;
+        void OnTick(float, AZ::ScriptTimePoint) override;
 
         // InterpolationBus
         void SetWorldTranslation(
