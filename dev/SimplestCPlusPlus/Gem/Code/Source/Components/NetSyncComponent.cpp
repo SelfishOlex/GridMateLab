@@ -40,7 +40,7 @@ void NetSyncComponent::Reflect(ReflectContext* context)
         sc->Class<NetSyncComponent, Component>()
             ->Version(1);
 
-        if (auto ec = sc->GetEditContext())
+        if (EditContext* ec = sc->GetEditContext())
         {
             ec->Class<NetSyncComponent>("Net Sync for Transform",
                 "[Sync TransformComponent manually]")
@@ -50,8 +50,7 @@ void NetSyncComponent::Reflect(ReflectContext* context)
                     "Simplest C++")
                 ->Attribute(
                     Edit::Attributes::AppearsInAddComponentMenu,
-                    AZ_CRC("Game"))
-                ;
+                    AZ_CRC("Game"));
         }
     }
 
@@ -67,11 +66,10 @@ void NetSyncComponent::Reflect(ReflectContext* context)
 
 void NetSyncComponent::Activate()
 {
-    m_isAuthoritative = NetQuery::IsEntityAuthoritative(
-        GetEntityId());
+    const AZ::EntityId self = GetEntityId();
+    m_isAuthoritative = NetQuery::IsEntityAuthoritative(self);
     if (m_isAuthoritative)
-        TransformNotificationBus::Handler::BusConnect(
-            GetEntityId());
+        TransformNotificationBus::Handler::BusConnect(self);
 }
 
 void NetSyncComponent::Deactivate()
@@ -81,11 +79,10 @@ void NetSyncComponent::Deactivate()
 }
 
 void NetSyncComponent::OnTransformChanged(
-    const Transform& local,
+    const Transform& /*local*/,
     const Transform& world)
 {
-    auto chunk = static_cast<Chunk*>(m_chunk.get());
-    if (chunk)
+    if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
     {
         chunk->m_position.Set(world.GetTranslation());
     }
@@ -95,7 +92,7 @@ void NetSyncComponent::OnNewTransform(
     const AZ::Vector3& v,
     const GridMate::TimeContext& tc)
 {
-    auto t = AZ::Transform::CreateIdentity();
+    Transform t = AZ::Transform::CreateIdentity();
     t.SetTranslation(v);
     EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus,
         SetWorldTM, t);
@@ -103,12 +100,9 @@ void NetSyncComponent::OnNewTransform(
 
 ReplicaChunkPtr NetSyncComponent::GetNetworkBinding()
 {
-    Chunk* replicaChunk =
-        GridMate::CreateReplicaChunk<Chunk>();
-
+    Chunk* replicaChunk = GridMate::CreateReplicaChunk<Chunk>();
     replicaChunk->SetHandler(this);
     m_chunk = replicaChunk;
-
     return m_chunk;
 }
 
