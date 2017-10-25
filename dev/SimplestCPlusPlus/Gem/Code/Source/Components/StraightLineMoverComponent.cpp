@@ -17,7 +17,7 @@ void StraightLineMoverComponent::Reflect(ReflectContext* context)
                  ->Field("Speed",
                          &StraightLineMoverComponent::m_speed);
 
-        if (auto ec = sc->GetEditContext())
+        if (EditContext* ec = sc->GetEditContext())
         {
             ec->Class<StraightLineMoverComponent>(
                   "Straight Line Mover",
@@ -58,7 +58,7 @@ void StraightLineMoverComponent::OnTick(
     EBUS_EVENT_ID_RESULT(currentX, GetEntityId(),
         TransformBus, GetWorldX);
 
-    auto newX = currentX + deltaTime * m_speed;
+    float newX = currentX + deltaTime * m_speed;
     EBUS_EVENT_ID(GetEntityId(), TransformBus,
         SetWorldX, newX);
 }
