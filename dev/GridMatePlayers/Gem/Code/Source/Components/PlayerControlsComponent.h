@@ -1,13 +1,13 @@
 #pragma once
 #include <AzCore/Component/Component.h>
-#include <GridMatePlayers/PlayerMovementBus.h>
+#include <GridMatePlayers/PlayerControlsBus.h>
 #include <AzCore/Component/TickBus.h>
 
 namespace GridMatePlayers
 {
     class PlayerControlsComponent
         : public AZ::Component
-        , public PlayerMovementBus::Handler
+        , public PlayerControlsBus::Handler
         , public AZ::TickBus::Handler
     {
     public:
@@ -22,8 +22,8 @@ namespace GridMatePlayers
         void Deactivate() override;
 
         // GridMatePlayers::PlayerMovementBus
-        void ForwardKeyUp() override;
-        void ForwardKeyDown() override;
+        void ForwardKeyReleased() override;
+        void ForwardKeyPressed() override;
 
         // AZ::TickBus interface implementation
         void OnTick(float deltaTime,

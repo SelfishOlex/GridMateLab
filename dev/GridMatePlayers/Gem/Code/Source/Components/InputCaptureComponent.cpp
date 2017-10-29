@@ -2,7 +2,7 @@
 #include "InputCaptureComponent.h"
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
-#include <GridMatePlayers/PlayerMovementBus.h>
+#include <GridMatePlayers/PlayerControlsBus.h>
 
 using namespace AZ;
 using namespace AzFramework;
@@ -15,7 +15,7 @@ void InputCaptureComponent::Reflect(ReflectContext* context)
         sc->Class<InputCaptureComponent>()
             ->Version(1);
 
-        if (auto ec = sc->GetEditContext())
+        if (EditContext* ec = sc->GetEditContext())
         {
             ec->Class<InputCaptureComponent>("Input Capture",
                 "Captures player input")
@@ -43,8 +43,8 @@ void InputCaptureComponent::Deactivate()
 bool InputCaptureComponent::OnInputChannelEventFiltered(
     const InputChannel& inputChannel)
 {
-    const auto deviceId = inputChannel.GetInputDevice()
-        .GetInputDeviceId();
+    const InputDeviceId deviceId =
+        inputChannel.GetInputDevice().GetInputDeviceId();
     if (deviceId == InputDeviceKeyboard::Id)
         return OnKeyboardEvent(inputChannel);
 
@@ -54,10 +54,11 @@ bool InputCaptureComponent::OnInputChannelEventFiltered(
 bool InputCaptureComponent::OnKeyboardEvent(
     const InputChannel& inputChannel)
 {
-    const auto inputType = inputChannel.GetInputChannelId();
+    const InputChannelId inputType = inputChannel.
+        GetInputChannelId();
     if (inputType == InputDeviceKeyboard::Key::AlphanumericW)
     {
-        const auto pressed = !!inputChannel.GetValue();
+        const bool pressed = !!inputChannel.GetValue();
         CheckAndUpdateForward(pressed);
 
         return true; // key consumed
@@ -74,13 +75,13 @@ void InputCaptureComponent::CheckAndUpdateForward(
     if (pressed)
         EBUS_EVENT_ID(
             GetEntityId(),
-            GridMatePlayers::PlayerMovementBus,
-            ForwardKeyDown);
+            GridMatePlayers::PlayerControlsBus,
+            ForwardKeyPressed);
     else
         EBUS_EVENT_ID(
             GetEntityId(),
-            GridMatePlayers::PlayerMovementBus,
-            ForwardKeyUp);
+            GridMatePlayers::PlayerControlsBus,
+            ForwardKeyReleased);
 
     m_isForwardPressed = pressed;
 }

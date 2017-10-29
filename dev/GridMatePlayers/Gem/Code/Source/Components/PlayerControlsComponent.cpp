@@ -30,22 +30,22 @@ void PlayerControlsComponent::Reflect(ReflectContext* context)
 
 void PlayerControlsComponent::Activate()
 {
-    PlayerMovementBus::Handler::BusConnect(GetEntityId());
+    PlayerControlsBus::Handler::BusConnect(GetEntityId());
     TickBus::Handler::BusConnect();
 }
 
 void PlayerControlsComponent::Deactivate()
 {
-    PlayerMovementBus::Handler::BusDisconnect();
+    PlayerControlsBus::Handler::BusDisconnect();
     TickBus::Handler::BusDisconnect();
 }
 
-void PlayerControlsComponent::ForwardKeyUp()
+void PlayerControlsComponent::ForwardKeyReleased()
 {
     m_movingForward = false;
 }
 
-void PlayerControlsComponent::ForwardKeyDown()
+void PlayerControlsComponent::ForwardKeyPressed()
 {
     m_movingForward = true;
 }
@@ -63,7 +63,7 @@ void PlayerControlsComponent::OnTick(
     EBUS_EVENT_ID_RESULT(currentPosition, parent,
         AZ::TransformBus, GetWorldTranslation);
 
-    auto newPosition = currentPosition +
+    Vector3 newPosition = currentPosition +
         Vector3::CreateAxisY(m_movingSpeedPerSecond * deltaTime);
     EBUS_EVENT_ID(parent, AZ::TransformBus,
         SetWorldTranslation, newPosition);
