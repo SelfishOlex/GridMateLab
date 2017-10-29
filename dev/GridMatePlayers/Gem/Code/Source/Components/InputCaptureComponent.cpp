@@ -15,7 +15,7 @@ void InputCaptureComponent::Reflect(ReflectContext* context)
         sc->Class<InputCaptureComponent>()
             ->Version(1);
 
-        if (auto ec = sc->GetEditContext())
+        if (EditContext* ec = sc->GetEditContext())
         {
             ec->Class<InputCaptureComponent>("Input Capture",
                 "Captures player input")
@@ -43,8 +43,8 @@ void InputCaptureComponent::Deactivate()
 bool InputCaptureComponent::OnInputChannelEventFiltered(
     const InputChannel& inputChannel)
 {
-    const auto deviceId = inputChannel.GetInputDevice()
-        .GetInputDeviceId();
+    const InputDeviceId deviceId =
+        inputChannel.GetInputDevice().GetInputDeviceId();
     if (deviceId == InputDeviceKeyboard::Id)
         return OnKeyboardEvent(inputChannel);
 
@@ -54,10 +54,11 @@ bool InputCaptureComponent::OnInputChannelEventFiltered(
 bool InputCaptureComponent::OnKeyboardEvent(
     const InputChannel& inputChannel)
 {
-    const auto inputType = inputChannel.GetInputChannelId();
+    const InputChannelId inputType = inputChannel.
+        GetInputChannelId();
     if (inputType == InputDeviceKeyboard::Key::AlphanumericW)
     {
-        const auto pressed = !!inputChannel.GetValue();
+        const bool pressed = !!inputChannel.GetValue();
         CheckAndUpdateForward(pressed);
 
         return true; // key consumed
@@ -83,12 +84,12 @@ void InputCaptureComponent::CheckAndUpdateForward(
         EBUS_EVENT_ID(
             GetEntityId(),
             GridMatePlayers::PlayerControlsBus,
-            ForwardKeyDown);
+            ForwardKeyPressed);
     else
         EBUS_EVENT_ID(
             GetEntityId(),
             GridMatePlayers::PlayerControlsBus,
-            ForwardKeyUp);
+            ForwardKeyReleased);
 
     m_isForwardPressed = pressed;
 }
@@ -101,7 +102,7 @@ void InputCaptureComponent::CheckAndUpdateFire(bool pressed)
         EBUS_EVENT_ID(
             GetEntityId(),
             GridMatePlayers::PlayerControlsBus,
-            FireKeyUp);
+            FireKeyReleased);
 
     m_isFiring = pressed;
 }
