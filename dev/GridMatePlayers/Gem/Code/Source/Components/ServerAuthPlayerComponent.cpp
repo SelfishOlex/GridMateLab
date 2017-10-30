@@ -45,7 +45,7 @@ void ServerAuthPlayerComponent::Reflect(
           ->Field("Movement Speed",
                   &ServerAuthPlayerComponent::m_speed);
 
-        if (auto ec = sc->GetEditContext())
+        if (EditContext* ec = sc->GetEditContext())
         {
             ec->Class<ServerAuthPlayerComponent>(
                   "Server Auth Player Controls",
@@ -75,7 +75,7 @@ void ServerAuthPlayerComponent::Reflect(
 void ServerAuthPlayerComponent::SetAssociatedPlayerId(
     const GridMate::MemberIDCompact& player)
 {
-    if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
+    if (Chunk* chunk = static_cast<Chunk*>(m_chunk.get()))
         chunk->m_owningPlayer.Set(player);
 }
 
@@ -141,7 +141,7 @@ void ServerAuthPlayerComponent::BroadcastNewBody()
     if (NetQuery::IsEntityAuthoritative(GetEntityId())) return;
     if (!m_readyToConnectToBody) return;
 
-    if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
+    if (Chunk* chunk = static_cast<Chunk*>(m_chunk.get()))
     {
         if (chunk->m_owningPlayer.Get() != 0)
             EBUS_EVENT(LocalClientBus, AttachToBody,

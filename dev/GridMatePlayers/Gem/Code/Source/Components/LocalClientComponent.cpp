@@ -20,7 +20,7 @@ void LocalClientComponent::Reflect(AZ::ReflectContext* context)
           ->Field("Camera Offset",
                   &LocalClientComponent::m_cameraOffset);
 
-        if (auto ec = sc->GetEditContext())
+        if (EditContext* ec = sc->GetEditContext())
         {
             ec->Class<LocalClientComponent>(
                   "Local Client",
@@ -72,7 +72,7 @@ void LocalClientComponent::AttachToBody(
 {
     if (m_selfId == 0 || m_selfId != playerId) return;
 
-    auto t = Transform::CreateTranslation(m_cameraOffset);
+    Transform t = Transform::CreateTranslation(m_cameraOffset);
 
     EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus,
         SetLocalTM, t);

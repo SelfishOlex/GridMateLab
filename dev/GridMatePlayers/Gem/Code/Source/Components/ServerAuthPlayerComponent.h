@@ -32,9 +32,9 @@ namespace GridMatePlayers
         void Deactivate() override;
 
         // PlayerControlsBus interface
-        void ForwardKeyUp() override {}
-        void ForwardKeyDown() override {}
-        void FireKeyUp() override {}
+        void ForwardKeyReleased() override {}
+        void ForwardKeyPressed() override {}
+        void FireKeyReleased() override {}
 
         // ServerPlayerBodyBus interface
         void SetAssociatedPlayerId(

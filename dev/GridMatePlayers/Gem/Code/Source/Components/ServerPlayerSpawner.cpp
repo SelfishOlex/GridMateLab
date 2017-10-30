@@ -19,7 +19,7 @@ void ServerPlayerSpawner::Reflect(ReflectContext* context)
         sc->Class<ServerPlayerSpawner, Component>()
             ->Version(1);
 
-        if (auto ec = sc->GetEditContext())
+        if (EditContext* ec = sc->GetEditContext())
         {
             ec->Class<ServerPlayerSpawner>(
                 "Server Player Spawner",
@@ -57,7 +57,7 @@ void ServerPlayerSpawner::OnMemberJoined(
     GridMate::GridSession* session,
     GridMate::GridMember* member)
 {
-    const auto playerId = member->GetIdCompact();
+    const MemberIDCompact playerId = member->GetIdCompact();
     if (session->GetMyMember()->GetIdCompact() == playerId)
         return; // ignore ourselves, the server
 
