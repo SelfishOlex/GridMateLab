@@ -12,7 +12,7 @@
 #include "Components/PebbleSpawnerComponent.h"
 #include "Components/LocalClientComponent.h"
 #include "Components/ServerAuthPlayerComponent.h"
-#include "Components/ServerPlayerSpawner.h"
+#include "Components/ServerPlayerSpawnerComponent.h"
 
 namespace GridMatePlayers
 {
@@ -32,7 +32,7 @@ namespace GridMatePlayers
                 InputCaptureComponent::CreateDescriptor(),
                 TimedProjectileComponent::CreateDescriptor(),
                 PebbleSpawnerComponent::CreateDescriptor(),
-                ServerPlayerSpawner::CreateDescriptor(),
+                ServerPlayerSpawnerComponent::CreateDescriptor(),
                 ServerAuthPlayerComponent::CreateDescriptor(),
                 LocalClientComponent::CreateDescriptor(),
             });

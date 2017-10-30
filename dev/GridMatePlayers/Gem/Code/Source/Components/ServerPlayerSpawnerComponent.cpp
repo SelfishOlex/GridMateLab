@@ -1,5 +1,5 @@
 #include "StdAfx.h"
-#include "ServerPlayerSpawner.h"
+#include "ServerPlayerSpawnerComponent.h"
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Network/NetBindingHandlerBus.h>
 #include <ISystem.h>
@@ -12,16 +12,16 @@ using namespace AzFramework;
 using namespace GridMate;
 using namespace GridMatePlayers;
 
-void ServerPlayerSpawner::Reflect(ReflectContext* context)
+void ServerPlayerSpawnerComponent::Reflect(ReflectContext* rc)
 {
-    if (auto sc = azrtti_cast<SerializeContext*>(context))
+    if (auto sc = azrtti_cast<SerializeContext*>(rc))
     {
-        sc->Class<ServerPlayerSpawner, Component>()
+        sc->Class<ServerPlayerSpawnerComponent, Component>()
             ->Version(1);
 
         if (EditContext* ec = sc->GetEditContext())
         {
-            ec->Class<ServerPlayerSpawner>(
+            ec->Class<ServerPlayerSpawnerComponent>(
                 "Server Player Spawner",
                 "Server Authoritative")
                 ->ClassElement(
@@ -36,7 +36,7 @@ void ServerPlayerSpawner::Reflect(ReflectContext* context)
     }
 }
 
-void ServerPlayerSpawner::Activate()
+void ServerPlayerSpawnerComponent::Activate()
 {
 #if defined(DEDICATED_SERVER)
     ISystem* system = nullptr;
@@ -49,14 +49,14 @@ void ServerPlayerSpawner::Activate()
 #endif
 }
 
-void ServerPlayerSpawner::Deactivate()
+void ServerPlayerSpawnerComponent::Deactivate()
 {
 #if defined(DEDICATED_SERVER)
     SessionEventBus::Handler::BusDisconnect();
 #endif
 }
 
-void ServerPlayerSpawner::OnMemberJoined(
+void ServerPlayerSpawnerComponent::OnMemberJoined(
     GridMate::GridSession* session,
     GridMate::GridMember* member)
 {
@@ -82,7 +82,7 @@ void ServerPlayerSpawner::OnMemberJoined(
     SliceInstantiationResultBus::MultiHandler::BusConnect(ticket);
 }
 
-void ServerPlayerSpawner::OnSliceInstantiated(
+void ServerPlayerSpawnerComponent::OnSliceInstantiated(
     const AZ::Data::AssetId&,
     const SliceComponent::SliceInstanceAddress& address)
 {

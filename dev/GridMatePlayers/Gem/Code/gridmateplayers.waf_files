@@ -21,8 +21,8 @@
         "Source/Components": [
             "Source/Components/LocalClientComponent.cpp",
             "Source/Components/LocalClientComponent.h",
-            "Source/Components/ServerPlayerSpawner.cpp",
-            "Source/Components/ServerPlayerSpawner.h",
+            "Source/Components/ServerPlayerSpawnerComponent.cpp",
+            "Source/Components/ServerPlayerSpawnerComponent.h",
             "Source/Components/ServerAuthPlayerComponent.cpp",
             "Source/Components/ServerAuthPlayerComponent.h",
             "Source/Components/PebbleSpawnerComponent.cpp",

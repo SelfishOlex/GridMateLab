@@ -42,28 +42,28 @@ void LocalClientComponent::Reflect(AZ::ReflectContext* context)
 
 void LocalClientComponent::Activate()
 {
-    if (!gEnv->IsDedicated())
-    {
-        LocalClientBus::Handler::BusConnect();
+#if !defined(DEDICATED_SERVER)
+    LocalClientBus::Handler::BusConnect();
 
-        if (gEnv && gEnv->pNetwork)
-        {
-            SessionEventBus::Handler::BusConnect(
-                gEnv->pNetwork->GetGridMate());
-        }
+    ISystem* system = nullptr;
+    EBUS_EVENT_RESULT(system, CrySystemRequestBus, GetCrySystem);
+    if (system)
+    {
+        SessionEventBus::Handler::BusConnect(
+            system->GetINetwork()->GetGridMate());
     }
+#endif
 }
 
 void LocalClientComponent::Deactivate()
 {
-    if (!gEnv->IsDedicated())
+#if !defined(DEDICATED_SERVER)
+    LocalClientBus::Handler::BusDisconnect();
+    if (SessionEventBus::Handler::BusIsConnected())
     {
-        LocalClientBus::Handler::BusDisconnect();
-        if (SessionEventBus::Handler::BusIsConnected())
-        {
-            SessionEventBus::Handler::BusDisconnect();
-        }
+        SessionEventBus::Handler::BusDisconnect();
     }
+#endif
 }
 
 void LocalClientComponent::AttachToBody(
