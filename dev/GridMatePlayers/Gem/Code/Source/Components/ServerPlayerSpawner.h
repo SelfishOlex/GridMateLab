@@ -33,7 +33,10 @@ namespace GridMatePlayers
             const AZ::SliceComponent::SliceInstanceAddress&)
                 override;
     private:
-        GridMate::MemberIDCompact m_spawningPlayer = 0;
+        AZStd::unordered_map<
+            AzFramework::SliceInstantiationTicket,
+            GridMate::MemberIDCompact> m_joiningplayers;
+
         AZ::u8 m_playerCount = 0;
     };
 }

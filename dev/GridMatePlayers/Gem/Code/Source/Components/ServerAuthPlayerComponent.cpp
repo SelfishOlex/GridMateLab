@@ -4,7 +4,6 @@
 #include <GridMate/Replica/ReplicaChunk.h>
 #include <AzFramework/Network/NetBindingHandlerBus.h>
 #include <GridMate/Replica/RemoteProcedureCall.h>
-#include <GridMatePlayers/PlayerActionsBus.h>
 #include <GridMate/Replica/ReplicaFunctions.h>
 #include <GridMatePlayers/LocalClientBus.h>
 
@@ -18,9 +17,7 @@ class ServerAuthPlayerComponent::Chunk
 {
 public:
     GM_CLASS_ALLOCATOR(Chunk);
-
-    Chunk()
-        : m_owningPlayer("Owning Player") {}
+    Chunk() : m_owningPlayer("Owning Player") {}
 
     static const char* GetChunkName()
     {

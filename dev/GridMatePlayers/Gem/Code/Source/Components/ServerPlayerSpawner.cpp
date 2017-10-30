@@ -38,19 +38,22 @@ void ServerPlayerSpawner::Reflect(ReflectContext* context)
 
 void ServerPlayerSpawner::Activate()
 {
-    if (gEnv && gEnv->IsDedicated())
+#if defined(DEDICATED_SERVER)
+    ISystem* system = nullptr;
+    EBUS_EVENT_RESULT(system, CrySystemRequestBus, GetCrySystem);
+    if (system)
     {
         SessionEventBus::Handler::BusConnect(
-            gEnv->pNetwork->GetGridMate());
+            system->GetINetwork()->GetGridMate());
     }
+#endif
 }
 
 void ServerPlayerSpawner::Deactivate()
 {
-    if (gEnv && gEnv->IsDedicated())
-    {
-        SessionEventBus::Handler::BusDisconnect();
-    }
+#if defined(DEDICATED_SERVER)
+    SessionEventBus::Handler::BusDisconnect();
+#endif
 }
 
 void ServerPlayerSpawner::OnMemberJoined(
@@ -61,7 +64,7 @@ void ServerPlayerSpawner::OnMemberJoined(
     if (session->GetMyMember()->GetIdCompact() == playerId)
         return; // ignore ourselves, the server
 
-    const auto t = Transform::CreateTranslation(
+    const Transform t = Transform::CreateTranslation(
         Vector3::CreateAxisY(10.f - m_playerCount * 1.f));
     m_playerCount++;
 
@@ -75,24 +78,29 @@ void ServerPlayerSpawner::OnMemberJoined(
         LmbrCentral::SpawnerComponentRequestBus,
         SpawnRelative, t);
 
-    m_spawningPlayer = playerId;
-    SliceInstantiationResultBus::MultiHandler::BusConnect(
-        ticket);
+    m_joiningplayers[ticket] = playerId;
+    SliceInstantiationResultBus::MultiHandler::BusConnect(ticket);
 }
 
 void ServerPlayerSpawner::OnSliceInstantiated(
     const AZ::Data::AssetId&,
     const SliceComponent::SliceInstanceAddress& address)
 {
-    // TODO support clients joining at the same time
-
-    SliceInstantiationResultBus::MultiHandler::BusDisconnect();
-    for (auto& entity : address.second->
-        GetInstantiated()->m_entities)
+    const SliceInstantiationTicket& ticket =
+        *SliceInstantiationResultBus::GetCurrentBusId();
+    const auto iter = m_joiningplayers.find(ticket);
+    if (iter != m_joiningplayers.end())
     {
-        EBUS_EVENT_ID(entity->GetId(), ServerPlayerBodyBus,
-            SetAssociatedPlayerId, m_spawningPlayer);
-    }
+        const MemberIDCompact playerId = iter->second;
+        SliceInstantiationResultBus::MultiHandler::BusDisconnect(
+            ticket);
 
-    m_spawningPlayer = 0;
+        for (Entity* entity : address.second->
+            GetInstantiated()->m_entities)
+        {
+            EBUS_EVENT_ID(entity->GetId(), ServerPlayerBodyBus,
+                SetAssociatedPlayerId, playerId);
+        }
+    }
+    m_joiningplayers.erase(iter);
 }
