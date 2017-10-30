@@ -36,7 +36,7 @@ namespace GridMatePlayers
                 ServerPlayerSpawnerComponent::CreateDescriptor(),
                 ServerAuthPlayerComponent::CreateDescriptor(),
                 LocalClientComponent::CreateDescriptor(),
-                ServerPlayerControls::CreateDescriptor(),
+                ServerPlayerControlsComponent::CreateDescriptor(),
             });
         }
 

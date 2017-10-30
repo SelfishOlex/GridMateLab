@@ -6,18 +6,18 @@
 
 namespace GridMatePlayers
 {
-    class ServerPlayerControls
+    class ServerPlayerControlsComponent
         : public AZ::Component
         , public PlayerControlsBus::Handler
         , public AZ::TickBus::Handler
         , public AzFramework::NetBindable
     {
     public:
-        AZ_COMPONENT(ServerPlayerControls,
+        AZ_COMPONENT(ServerPlayerControlsComponent,
             "{8381b4f3-e7de-4dfc-845b-e52fd7bd2394}",
             NetBindable);
 
-        ~ServerPlayerControls() override = default;
+        ~ServerPlayerControlsComponent() override = default;
 
         static void Reflect(AZ::ReflectContext* reflection);
 
