@@ -37,7 +37,7 @@ void LocalPredictionComponent::Reflect(ReflectContext* reflect)
         sc->Class<LocalPredictionComponent, Component>()
             ->Version(1);
 
-        if (auto ec = sc->GetEditContext())
+        if (EditContext* ec = sc->GetEditContext())
         {
             ec->Class<LocalPredictionComponent>(
                 "Local Prediction",
@@ -62,11 +62,11 @@ void LocalPredictionComponent::Reflect(ReflectContext* reflect)
 
 void LocalPredictionComponent::Activate()
 {
-    const auto self = GetEntityId();
+    const EntityId self = GetEntityId();
     LocalPredictionRequestBus::Handler::BusConnect(self);
     TransformNotificationBus::Handler::BusConnect(self);
 
-    if (!NetQuery::IsEntityAuthoritative(GetEntityId()))
+    if (!NetQuery::IsEntityAuthoritative(self))
         TickBus::Handler::BusConnect();
 
     m_isActive = true;
@@ -124,26 +124,25 @@ void LocalPredictionComponent::OnCharacterStop(u32 time)
 void LocalPredictionComponent::OnTransformChanged(
     const AZ::Transform&, const AZ::Transform& world)
 {
-    if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
+    if (Chunk* chunk = static_cast<Chunk*>(m_chunk.get()))
     {
+        const Vector3 newLocal = world.GetTranslation();
         if (chunk->IsMaster())
         {
-            const auto diff =
-                chunk->m_serverCheckpoint.Get().m_vector -
-                world.GetTranslation();
-            if (diff.GetLengthSq() < m_allowedDeviation) return;
+            const float diff = newLocal.GetDistance(
+                chunk->m_serverCheckpoint.Get().m_vector);
+            if (diff < m_allowedDeviation) return;
 
             AZ_Printf("Book", "server (-- %f --) @ %d",
-                static_cast<float>(world.GetTranslation().GetY()),
-                GetTime());
+                static_cast<float>(newLocal.GetY()),
+                GetLocalTime());
 
             chunk->m_serverCheckpoint.Set(
-            { world.GetTranslation(), GetTime() });
+                { newLocal, GetLocalTime() });
         }
         else
         {
-            m_history.AddDataPoint(world.GetTranslation(),
-                GetTime());
+            m_history.AddDataPoint(newLocal, GetLocalTime());
         }
     }
 }
@@ -158,13 +157,13 @@ void LocalPredictionComponent::OnTick(float, ScriptTimePoint)
 
 Vector3 LocalPredictionComponent::GetPosition() const
 {
-    auto t = AZ::Transform::CreateIdentity();
-    EBUS_EVENT_ID_RESULT(t, GetEntityId(), AZ::TransformBus,
-        GetWorldTM);
-    return t.GetTranslation();
+    Vector3 v = AZ::Vector3::CreateZero();
+    EBUS_EVENT_ID_RESULT(v, GetEntityId(), AZ::TransformBus,
+        GetWorldTranslation);
+    return v;
 }
 
-AZ::u32 LocalPredictionComponent::GetTime() const
+AZ::u32 LocalPredictionComponent::GetLocalTime() const
 {
     if (!m_chunk) return 0;
     return m_chunk->GetReplicaManager()->GetTime().m_localTime;
@@ -176,11 +175,11 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
     if (m_isActive &&
         !NetQuery::IsEntityAuthoritative(GetEntityId()))
     {
-        const auto& serverPosition = value.m_vector;
-        const auto local = m_history.GetPositionAt(value.m_time);
-        const auto diff = local - serverPosition;
-
-        if (diff.GetLengthSq() > m_allowedDeviation)
+        const Vector3& serverPosition = value.m_vector;
+        const Vector3 local = m_history.GetPositionAt(
+            value.m_time);
+        const float diff = local.GetDistance(serverPosition);
+        if (diff > m_allowedDeviation)
         {
             EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus,
                 SetWorldTM,
