@@ -17,9 +17,7 @@ class ServerAuthPlayerComponent::Chunk
 {
 public:
     GM_CLASS_ALLOCATOR(Chunk);
-
-    Chunk()
-        : m_owningPlayer("Owning Player") {}
+    Chunk() : m_owningPlayer("Owning Player") {}
 
     static const char* GetChunkName()
     {
@@ -42,7 +40,7 @@ void ServerAuthPlayerComponent::Reflect(
         sc->Class<ServerAuthPlayerComponent, Component>()
           ->Version(1);
 
-        if (auto ec = sc->GetEditContext())
+        if (EditContext* ec = sc->GetEditContext())
         {
             ec->Class<ServerAuthPlayerComponent>(
                   "Server Auth Player Body",
@@ -69,7 +67,7 @@ void ServerAuthPlayerComponent::Reflect(
 void ServerAuthPlayerComponent::SetAssociatedPlayerId(
     const GridMate::MemberIDCompact& player)
 {
-    if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
+    if (Chunk* chunk = static_cast<Chunk*>(m_chunk.get()))
         chunk->m_owningPlayer.Set(player);
 }
 
@@ -133,7 +131,7 @@ void ServerAuthPlayerComponent::BroadcastNewBody()
     if (NetQuery::IsEntityAuthoritative(GetEntityId())) return;
     if (!m_readyToConnectToBody) return;
 
-    if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
+    if (Chunk* chunk = static_cast<Chunk*>(m_chunk.get()))
     {
         if (chunk->m_owningPlayer.Get() != 0)
             EBUS_EVENT(LocalClientBus, AttachToBody,

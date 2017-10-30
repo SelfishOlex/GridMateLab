@@ -16,7 +16,6 @@ namespace GridMatePlayers
         static const AZ::EBusAddressPolicy AddressPolicy
             = AZ::EBusAddressPolicy::Single;
 
-        // Put your public methods here
         virtual void AttachToBody(
             GridMate::MemberIDCompact playerId,
             const AZ::EntityId& body) = 0;

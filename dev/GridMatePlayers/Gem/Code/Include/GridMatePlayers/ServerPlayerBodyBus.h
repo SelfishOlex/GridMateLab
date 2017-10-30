@@ -17,7 +17,6 @@ namespace GridMatePlayers
             AZ::EBusAddressPolicy::ById;
         using BusIdType = AZ::EntityId;
 
-        // Put your public methods here
         virtual void SetAssociatedPlayerId(
             const GridMate::MemberIDCompact& player) = 0;
     };

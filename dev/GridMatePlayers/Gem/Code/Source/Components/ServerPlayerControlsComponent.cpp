@@ -128,19 +128,19 @@ void ServerPlayerControls::UnbindFromNetwork()
     }
 }
 
-void ServerPlayerControls::ForwardKeyUp()
+void ServerPlayerControls::ForwardKeyReleased()
 {
     if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
         chunk->m_stopForward();
 }
 
-void ServerPlayerControls::ForwardKeyDown()
+void ServerPlayerControls::ForwardKeyPressed()
 {
     if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
         chunk->m_startForward();
 }
 
-void ServerPlayerControls::FireKeyUp()
+void ServerPlayerControls::FireKeyReleased()
 {
     if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
         chunk->m_fireCommand();

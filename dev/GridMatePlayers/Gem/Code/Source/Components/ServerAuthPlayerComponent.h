@@ -8,8 +8,8 @@ namespace GridMatePlayers
 {
     class ServerAuthPlayerComponent
         : public AZ::Component
-          , public AzFramework::NetBindable
-          , public ServerPlayerBodyBus::Handler
+        , public AzFramework::NetBindable
+        , public ServerPlayerBodyBus::Handler
     {
     public:
         AZ_COMPONENT(ServerAuthPlayerComponent,

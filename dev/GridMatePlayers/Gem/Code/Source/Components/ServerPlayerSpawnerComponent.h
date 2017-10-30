@@ -6,13 +6,13 @@
 
 namespace GridMatePlayers
 {
-    class ServerPlayerSpawner
+    class ServerPlayerSpawnerComponent
         : public AZ::Component
         , public GridMate::SessionEventBus::Handler
         , AzFramework::SliceInstantiationResultBus::MultiHandler
     {
     public:
-        AZ_COMPONENT(ServerPlayerSpawner,
+        AZ_COMPONENT(ServerPlayerSpawnerComponent,
             "{49BA7630-8B7E-48CA-9FFD-152268C2A461}");
 
         static void Reflect(AZ::ReflectContext* context);
@@ -33,7 +33,10 @@ namespace GridMatePlayers
             const AZ::SliceComponent::SliceInstanceAddress&)
                 override;
     private:
-        GridMate::MemberIDCompact m_spawningPlayer = 0;
+        AZStd::unordered_map<
+            AzFramework::SliceInstantiationTicket,
+            GridMate::MemberIDCompact> m_joiningplayers;
+
         AZ::u8 m_playerCount = 0;
     };
 }
