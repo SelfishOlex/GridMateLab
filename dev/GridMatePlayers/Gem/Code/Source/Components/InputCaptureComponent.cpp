@@ -66,7 +66,7 @@ bool InputCaptureComponent::OnKeyboardEvent(
 
     if (inputType == InputDeviceKeyboard::Key::EditSpace)
     {
-        const auto pressed = !!inputChannel.GetValue();
+        const bool pressed = !!inputChannel.GetValue();
         CheckAndUpdateFire(pressed);
 
         return true; // key consumed
