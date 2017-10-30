@@ -16,7 +16,6 @@ namespace GridMatePlayers
         static const AZ::EBusAddressPolicy AddressPolicy
             = AZ::EBusAddressPolicy::Single;
 
-        // Put your public methods here
         virtual void PlayerFired(
             const AZ::Vector3& source) = 0;
     };

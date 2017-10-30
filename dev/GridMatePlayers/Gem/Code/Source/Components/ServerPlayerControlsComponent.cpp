@@ -14,7 +14,7 @@ using namespace AzFramework;
 using namespace GridMate;
 using namespace GridMatePlayers;
 
-class ServerPlayerControls::Chunk
+class ServerPlayerControlsComponent::Chunk
     : public GridMate::ReplicaChunk
 {
 public:
@@ -27,39 +27,39 @@ public:
 
     static const char* GetChunkName()
     {
-        return "ServerPlayerControls::Chunk";
+        return "ServerPlayerControlsComponent::Chunk";
     }
 
     bool IsReplicaMigratable() override { return true; }
 
     GridMate::Rpc<>::BindInterface<
-        ServerPlayerControls,
-        &ServerPlayerControls::OnStartForward>
+        ServerPlayerControlsComponent,
+        &ServerPlayerControlsComponent::OnStartForward>
         m_startForward;
 
     GridMate::Rpc<>::BindInterface<
-        ServerPlayerControls,
-        &ServerPlayerControls::OnStopForward>
+        ServerPlayerControlsComponent,
+        &ServerPlayerControlsComponent::OnStopForward>
         m_stopForward;
 
     GridMate::Rpc<>::BindInterface<
-        ServerPlayerControls,
-        &ServerPlayerControls::OnFireCommand>
+        ServerPlayerControlsComponent,
+        &ServerPlayerControlsComponent::OnFireCommand>
         m_fireCommand;
 };
 
-void ServerPlayerControls::Reflect(AZ::ReflectContext* reflection)
+void ServerPlayerControlsComponent::Reflect(AZ::ReflectContext* reflection)
 {
     if (auto sc = azrtti_cast<SerializeContext*>(reflection))
     {
-        sc->Class<ServerPlayerControls, Component>()
+        sc->Class<ServerPlayerControlsComponent, Component>()
             ->Version(1)
             ->Field("Movement Speed",
-                &ServerPlayerControls::m_speed);
+                &ServerPlayerControlsComponent::m_speed);
 
-        if (auto ec = sc->GetEditContext())
+        if (EditContext* ec = sc->GetEditContext())
         {
-            ec->Class<ServerPlayerControls>(
+            ec->Class<ServerPlayerControlsComponent>(
                 "Server Player Controls",
                 "[Passes execution of control to the server]")
                 ->ClassElement(
@@ -70,7 +70,7 @@ void ServerPlayerControls::Reflect(AZ::ReflectContext* reflection)
                     Edit::Attributes::AppearsInAddComponentMenu,
                     AZ_CRC("Game"))
                 ->DataElement(nullptr,
-                    &ServerPlayerControls::m_speed,
+                    &ServerPlayerControlsComponent::m_speed,
                     "Movement Speed", "");
         }
     }
@@ -83,7 +83,7 @@ void ServerPlayerControls::Reflect(AZ::ReflectContext* reflection)
     }
 }
 
-void ServerPlayerControls::Activate()
+void ServerPlayerControlsComponent::Activate()
 {
     if (NetQuery::IsEntityAuthoritative(GetEntityId()))
     {
@@ -95,7 +95,7 @@ void ServerPlayerControls::Activate()
     }
 }
 
-void ServerPlayerControls::Deactivate()
+void ServerPlayerControlsComponent::Deactivate()
 {
     if (NetQuery::IsEntityAuthoritative(GetEntityId()))
     {
@@ -107,21 +107,21 @@ void ServerPlayerControls::Deactivate()
     }
 }
 
-ReplicaChunkPtr ServerPlayerControls::GetNetworkBinding()
+ReplicaChunkPtr ServerPlayerControlsComponent::GetNetworkBinding()
 {
     m_chunk = GridMate::CreateReplicaChunk<Chunk>();
     m_chunk->SetHandler(this);
     return m_chunk;
 }
 
-void ServerPlayerControls::SetNetworkBinding(
+void ServerPlayerControlsComponent::SetNetworkBinding(
     GridMate::ReplicaChunkPtr chunk)
 {
     m_chunk = chunk;
     m_chunk->SetHandler(this);
 }
 
-void ServerPlayerControls::UnbindFromNetwork()
+void ServerPlayerControlsComponent::UnbindFromNetwork()
 {
     if (m_chunk)
     {
@@ -130,15 +130,15 @@ void ServerPlayerControls::UnbindFromNetwork()
     }
 }
 
-AZ::u32 ServerPlayerControls::GetLocalTime() const
+AZ::u32 ServerPlayerControlsComponent::GetLocalTime() const
 {
     if (!m_chunk) return 0;
     return m_chunk->GetReplicaManager()->GetTime().m_localTime;
 }
 
-void ServerPlayerControls::ForwardKeyUp()
+void ServerPlayerControlsComponent::ForwardKeyReleased()
 {
-    if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
+    if (Chunk* chunk = static_cast<Chunk*>(m_chunk.get()))
     {
         chunk->m_stopForward();
 
@@ -148,9 +148,9 @@ void ServerPlayerControls::ForwardKeyUp()
     }
 }
 
-void ServerPlayerControls::ForwardKeyDown()
+void ServerPlayerControlsComponent::ForwardKeyPressed()
 {
-    if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
+    if (Chunk* chunk = static_cast<Chunk*>(m_chunk.get()))
     {
         chunk->m_startForward();
 
@@ -160,13 +160,13 @@ void ServerPlayerControls::ForwardKeyDown()
     }
 }
 
-void ServerPlayerControls::FireKeyUp()
+void ServerPlayerControlsComponent::FireKeyReleased()
 {
-    if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
+    if (Chunk* chunk = static_cast<Chunk*>(m_chunk.get()))
         chunk->m_fireCommand();
 }
 
-void ServerPlayerControls::OnTick(float deltaTime,
+void ServerPlayerControlsComponent::OnTick(float deltaTime,
     ScriptTimePoint)
 {
     Vector3 moveDirection;
@@ -181,21 +181,21 @@ void ServerPlayerControls::OnTick(float deltaTime,
         moveDirection, 0);
 }
 
-bool ServerPlayerControls::OnStartForward(
+bool ServerPlayerControlsComponent::OnStartForward(
     const GridMate::RpcContext& rc)
 {
     m_movingForward = true;
     return false;
 }
 
-bool ServerPlayerControls::OnStopForward(
+bool ServerPlayerControlsComponent::OnStopForward(
     const GridMate::RpcContext& rc)
 {
     m_movingForward = false;
     return false;
 }
 
-bool ServerPlayerControls::OnFireCommand(
+bool ServerPlayerControlsComponent::OnFireCommand(
     const GridMate::RpcContext& rc)
 {
     Vector3 position;

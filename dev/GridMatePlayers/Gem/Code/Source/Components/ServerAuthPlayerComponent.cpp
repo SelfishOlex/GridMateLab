@@ -6,8 +6,6 @@
 #include <GridMate/Replica/RemoteProcedureCall.h>
 #include <GridMate/Replica/ReplicaFunctions.h>
 #include <GridMatePlayers/LocalClientBus.h>
-#include "AzCore/Component/TransformBus.h"
-#include <LmbrCentral/Physics/PhysicsComponentBus.h>
 
 using namespace AZ;
 using namespace AzFramework;
@@ -19,12 +17,7 @@ class ServerAuthPlayerComponent::Chunk
 {
 public:
     GM_CLASS_ALLOCATOR(Chunk);
-
-    Chunk()
-        : m_owningPlayer("Owning Player")
-        , m_startingPosition("Starting Position")
-    {
-    }
+    Chunk() : m_owningPlayer("Owning Player") {}
 
     static const char* GetChunkName()
     {
@@ -37,8 +30,6 @@ public:
         ServerAuthPlayerComponent,
         &ServerAuthPlayerComponent::OnOwningPlayerChanged>
     m_owningPlayer;
-
-    DataSet<Vector3> m_startingPosition;
 };
 
 void ServerAuthPlayerComponent::Reflect(
@@ -49,7 +40,7 @@ void ServerAuthPlayerComponent::Reflect(
         sc->Class<ServerAuthPlayerComponent, Component>()
           ->Version(1);
 
-        if (auto ec = sc->GetEditContext())
+        if (EditContext* ec = sc->GetEditContext())
         {
             ec->Class<ServerAuthPlayerComponent>(
                   "Server Auth Player Body",
@@ -76,15 +67,8 @@ void ServerAuthPlayerComponent::Reflect(
 void ServerAuthPlayerComponent::SetAssociatedPlayerId(
     const GridMate::MemberIDCompact& player)
 {
-    if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
-    {
-        auto t = Transform::CreateIdentity();
-        EBUS_EVENT_ID_RESULT(t, GetEntityId(), AZ::TransformBus,
-            GetWorldTM);
-        chunk->m_startingPosition.Set(t.GetTranslation());
-
+    if (Chunk* chunk = static_cast<Chunk*>(m_chunk.get()))
         chunk->m_owningPlayer.Set(player);
-    }
 }
 
 ReplicaChunkPtr ServerAuthPlayerComponent::GetNetworkBinding()
@@ -147,17 +131,8 @@ void ServerAuthPlayerComponent::BroadcastNewBody()
     if (NetQuery::IsEntityAuthoritative(GetEntityId())) return;
     if (!m_readyToConnectToBody) return;
 
-    if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
+    if (Chunk* chunk = static_cast<Chunk*>(m_chunk.get()))
     {
-        auto t = Transform::CreateTranslation(
-            chunk->m_startingPosition.Get());
-        EBUS_EVENT_ID(GetEntityId(), TransformBus,
-            SetWorldTM, t);
-
-        EBUS_EVENT_ID(GetEntityId(),
-            LmbrCentral::PhysicsComponentRequestBus,
-            EnablePhysics);
-
         if (chunk->m_owningPlayer.Get() != 0)
             EBUS_EVENT(LocalClientBus, AttachToBody,
                 chunk->m_owningPlayer.Get(), GetEntityId());
