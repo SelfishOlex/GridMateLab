@@ -44,6 +44,11 @@ public:
         ReplicaChunkBase* CreateFromStream(
             UnmarshalContext& mc) override
         {
+            if (!mc.m_hasCtorData)
+            {
+                return CreateReplicaChunk<Chunk>();
+            }
+
             Vector3 position;
             mc.m_iBuf->Read(position);
             MemberIDCompact playerId;
@@ -59,6 +64,7 @@ public:
             MemberIDCompact playerId;
             mc.m_iBuf->Read(playerId);
         }
+
         void DeleteReplicaChunk(
             ReplicaChunkBase* chunkInstance) override
         {
