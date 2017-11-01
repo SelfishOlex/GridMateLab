@@ -178,39 +178,37 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
     if (m_isActive &&
         !NetQuery::IsEntityAuthoritative(GetEntityId()))
     {
-        const Vector3& serverPos = value.m_vector;
+        const Vector3& sPos = value.m_vector;
         const u32 serverTime = value.m_time;
 
         if (m_history.HasHistory())
         {
-            const auto backThen =
+            const Vector3 backThen =
                 m_history.GetPositionAt(serverTime);
-            const auto diff = backThen - serverPos;
-            const auto diffLength = diff.GetLength();
-
-            const auto allowedDeviation =
+            const float diff = backThen.GetDistance(sPos);
+            const float allowedDeviation =
                 (GetLocalTime() - serverTime) * 0.001f *
                 AZStd::GetMax(m_speed, .5f);
 
-            if (diffLength > allowedDeviation)
+            if (diff > allowedDeviation)
             {
                 m_history.DeleteAfter(serverTime);
-                m_history.AddDataPoint(serverPos, serverTime);
+                m_history.AddDataPoint(sPos, serverTime);
 
                 EBUS_EVENT_ID(GetEntityId(), TransformBus,
-                    SetWorldTranslation, serverPos);
+                    SetWorldTranslation, sPos);
 
                 AZ_Printf("Book", "new (-- %f --) @%d; dy %f",
-                    static_cast<float>(serverPos.GetY()),
+                    static_cast<float>(sPos.GetY()),
                     GetLocalTime(),
-                    static_cast<float>(diff.GetY()));
+                    static_cast<float>((backThen - sPos).GetY()));
             }
         }
         else
         {
-            m_history.AddDataPoint(serverPos, serverTime);
+            m_history.AddDataPoint(sPos, serverTime);
             EBUS_EVENT_ID(GetEntityId(), TransformBus,
-                SetWorldTranslation, serverPos);
+                SetWorldTranslation, sPos);
         }
     }
 }
