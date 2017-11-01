@@ -6,8 +6,9 @@
     "\\Gem\\Code\\Include",
     "\\Gem\\Code\\Include\\GridMatePlayers",
     "\\Gem\\Code\\Source",
-    "\\Gem\\Code\\Source\\Components"
+    "\\Gem\\Code\\Source\\Components",
+    "\\Gem\\Code\\Source\\Utils"
   ],
-  "SelectedNode": "\\CppProperties.json",
+  "SelectedNode": "\\Gem\\Code",
   "PreviewInSolutionExplorer": false
 }

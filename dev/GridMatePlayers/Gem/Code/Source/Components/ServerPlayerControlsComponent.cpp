@@ -172,7 +172,7 @@ void ServerPlayerControlsComponent::FireKeyReleased()
 void ServerPlayerControlsComponent::OnTick(float deltaTime,
     ScriptTimePoint)
 {
-    const auto localTime = GetLocalTime();
+    const AZ::u32 localTime = GetLocalTime();
     while(m_futureActions.size() > 0 &&
         m_futureActions.top().m_time <= localTime)
     {
