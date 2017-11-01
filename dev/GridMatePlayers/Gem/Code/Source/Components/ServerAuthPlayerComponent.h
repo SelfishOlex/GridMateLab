@@ -9,8 +9,8 @@ namespace GridMatePlayers
 {
     class ServerAuthPlayerComponent
         : public AZ::Component
-          , public AzFramework::NetBindable
-          , public ServerPlayerBodyBus::Handler
+        , public AzFramework::NetBindable
+        , public ServerPlayerBodyBus::Handler
     {
     public:
         AZ_COMPONENT(ServerAuthPlayerComponent,
@@ -33,16 +33,8 @@ namespace GridMatePlayers
         void SetAssociatedPlayerId(
             const GridMate::MemberIDCompact& player) override;
 
-        // DataSet callback
-        void OnOwningPlayerChanged(
-            const GridMate::MemberIDCompact& value,
-            const GridMate::TimeContext& tc);
-
     private:
         class Chunk;
         GridMate::ReplicaChunkPtr m_chunk;
-
-        void BroadcastNewBody();
-        bool m_readyToConnectToBody = false;
     };
 }

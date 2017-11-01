@@ -1,5 +1,5 @@
 #include "StdAfx.h"
-#include "ServerPlayerSpawner.h"
+#include "ServerPlayerSpawnerComponent.h"
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Network/NetBindingHandlerBus.h>
 #include <ISystem.h>
@@ -12,16 +12,16 @@ using namespace AzFramework;
 using namespace GridMate;
 using namespace GridMatePlayers;
 
-void ServerPlayerSpawner::Reflect(AZ::ReflectContext* context)
+void ServerPlayerSpawnerComponent::Reflect(ReflectContext* rc)
 {
-    if (auto sc = azrtti_cast<SerializeContext*>(context))
+    if (auto sc = azrtti_cast<SerializeContext*>(rc))
     {
-        sc->Class<ServerPlayerSpawner, Component>()
+        sc->Class<ServerPlayerSpawnerComponent, Component>()
             ->Version(1);
 
-        if (auto ec = sc->GetEditContext())
+        if (EditContext* ec = sc->GetEditContext())
         {
-            ec->Class<ServerPlayerSpawner>(
+            ec->Class<ServerPlayerSpawnerComponent>(
                 "Server Player Spawner",
                 "Server Authoritative")
                 ->ClassElement(
@@ -36,33 +36,35 @@ void ServerPlayerSpawner::Reflect(AZ::ReflectContext* context)
     }
 }
 
-void ServerPlayerSpawner::Activate()
+void ServerPlayerSpawnerComponent::Activate()
 {
-    if (gEnv && gEnv->IsDedicated())
+#if defined(DEDICATED_SERVER)
+    ISystem* system = nullptr;
+    EBUS_EVENT_RESULT(system, CrySystemRequestBus, GetCrySystem);
+    if (system)
     {
-        if (gEnv->pNetwork)
-            SessionEventBus::Handler::BusConnect(
-                gEnv->pNetwork->GetGridMate());
+        SessionEventBus::Handler::BusConnect(
+            system->GetINetwork()->GetGridMate());
     }
+#endif
 }
 
-void ServerPlayerSpawner::Deactivate()
+void ServerPlayerSpawnerComponent::Deactivate()
 {
-    if (gEnv && gEnv->IsDedicated())
-    {
-        SessionEventBus::Handler::BusDisconnect();
-    }
+#if defined(DEDICATED_SERVER)
+    SessionEventBus::Handler::BusDisconnect();
+#endif
 }
 
-void ServerPlayerSpawner::OnMemberJoined(
+void ServerPlayerSpawnerComponent::OnMemberJoined(
     GridMate::GridSession* session,
     GridMate::GridMember* member)
 {
-    const auto playerId = member->GetIdCompact();
+    const MemberIDCompact playerId = member->GetIdCompact();
     if (session->GetMyMember()->GetIdCompact() == playerId)
         return; // ignore ourselves, the server
 
-    const auto t = Transform::CreateTranslation(
+    const Transform t = Transform::CreateTranslation(
         Vector3::CreateAxisY(10.f - m_playerCount * 1.f));
     m_playerCount++;
 
@@ -77,24 +79,23 @@ void ServerPlayerSpawner::OnMemberJoined(
         SpawnRelative, t);
 
     m_joiningplayers[ticket] = playerId;
-    SliceInstantiationResultBus::MultiHandler::BusConnect(
-        ticket);
+    SliceInstantiationResultBus::MultiHandler::BusConnect(ticket);
 }
 
-void ServerPlayerSpawner::OnSliceInstantiated(
+void ServerPlayerSpawnerComponent::OnSliceInstantiated(
     const AZ::Data::AssetId&,
     const SliceComponent::SliceInstanceAddress& address)
 {
-    const auto& ticket =
+    const SliceInstantiationTicket& ticket =
         *SliceInstantiationResultBus::GetCurrentBusId();
     const auto iter = m_joiningplayers.find(ticket);
     if (iter != m_joiningplayers.end())
     {
-        const auto playerId = iter->second;
+        const MemberIDCompact playerId = iter->second;
         SliceInstantiationResultBus::MultiHandler::BusDisconnect(
             ticket);
 
-        for (auto& entity : address.second->
+        for (Entity* entity : address.second->
             GetInstantiated()->m_entities)
         {
             EBUS_EVENT_ID(entity->GetId(), ServerPlayerBodyBus,

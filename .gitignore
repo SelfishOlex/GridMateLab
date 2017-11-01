@@ -140,3 +140,4 @@ dev/Bin64vc140.Test/
 dev/Tools/LmbrSetup/Win.vc140.Debug/
 dev/Tools/crcfix/bin/vc140/
 dev/GridMatePlayers/.vs/VSWorkspaceState.json
+dev/Editor/editorlayout.xml

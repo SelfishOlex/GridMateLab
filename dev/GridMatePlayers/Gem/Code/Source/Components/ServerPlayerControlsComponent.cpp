@@ -59,7 +59,7 @@ void ServerPlayerControlsComponent::Reflect(
             ->Field("Movement Speed",
                 &ServerPlayerControlsComponent::m_speed);
 
-        if (auto ec = sc->GetEditContext())
+        if (EditContext* ec = sc->GetEditContext())
         {
             ec->Class<ServerPlayerControlsComponent>(
                 "Server Player Controls",
@@ -139,9 +139,9 @@ AZ::u32 ServerPlayerControlsComponent::GetLocalTime() const
     return t;
 }
 
-void ServerPlayerControlsComponent::ForwardKeyUp()
+void ServerPlayerControlsComponent::ForwardKeyReleased()
 {
-    if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
+    if (Chunk* chunk = static_cast<Chunk*>(m_chunk.get()))
     {
         chunk->m_stopForward(GetLocalTime());
 
@@ -151,9 +151,9 @@ void ServerPlayerControlsComponent::ForwardKeyUp()
     }
 }
 
-void ServerPlayerControlsComponent::ForwardKeyDown()
+void ServerPlayerControlsComponent::ForwardKeyPressed()
 {
-    if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
+    if (Chunk* chunk = static_cast<Chunk*>(m_chunk.get()))
     {
         chunk->m_startForward(GetLocalTime());
 
@@ -163,9 +163,9 @@ void ServerPlayerControlsComponent::ForwardKeyDown()
     }
 }
 
-void ServerPlayerControlsComponent::FireKeyUp()
+void ServerPlayerControlsComponent::FireKeyReleased()
 {
-    if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
+    if (Chunk* chunk = static_cast<Chunk*>(m_chunk.get()))
         chunk->m_fireCommand();
 }
 

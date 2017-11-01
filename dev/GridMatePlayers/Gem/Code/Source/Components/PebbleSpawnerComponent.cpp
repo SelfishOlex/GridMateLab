@@ -17,9 +17,7 @@ class PebbleSpawnerComponent::Chunk
 {
 public:
     GM_CLASS_ALLOCATOR(Chunk);
-
-    Chunk()
-        : m_playerFireRpc("PlayerFire") {}
+    Chunk() : m_playerFireRpc("PlayerFire") {}
 
     static const char* GetChunkName()
     {
@@ -43,7 +41,7 @@ void PebbleSpawnerComponent::Reflect(
         sc->Class<PebbleSpawnerComponent, Component>()
           ->Version(1);
 
-        if (auto ec = sc->GetEditContext())
+        if (EditContext* ec = sc->GetEditContext())
         {
             ec->Class<PebbleSpawnerComponent>(
                 "Pebble Spawner",
@@ -81,8 +79,7 @@ void PebbleSpawnerComponent::Deactivate()
 void PebbleSpawnerComponent::PlayerFired(
     const Vector3& source)
 {
-    auto chunk = static_cast<Chunk*>(m_chunk.get());
-    if (chunk)
+    if (Chunk* chunk = static_cast<Chunk*>(m_chunk.get()))
     {
         chunk->m_playerFireRpc(source);
     }
@@ -122,7 +119,7 @@ bool PebbleSpawnerComponent::OnPlayerFire(
 void PebbleSpawnerComponent::SpawnPebble(
     const AZ::Vector3& start)
 {
-    auto t = AZ::Transform::CreateTranslation(start);
+    Transform t = AZ::Transform::CreateTranslation(start);
 
     EBUS_EVENT_ID(GetEntityId(),
         LmbrCentral::SpawnerComponentRequestBus,

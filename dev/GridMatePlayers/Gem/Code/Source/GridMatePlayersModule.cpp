@@ -7,7 +7,7 @@
 #include <Components/PebbleSpawnerComponent.h>
 #include <Components/LocalClientComponent.h>
 #include <Components/ServerAuthPlayerComponent.h>
-#include <Components/ServerPlayerSpawner.h>
+#include <Components/ServerPlayerSpawnerComponent.h>
 #include <Components/ServerPlayerControlsComponent.h>
 #include <Components/LocalPredictionComponent.h>
 #include <System/NetworkTimeSystemComponent.h>
@@ -33,7 +33,7 @@ namespace GridMatePlayers
                 InputCaptureComponent::CreateDescriptor(),
                 TimedProjectileComponent::CreateDescriptor(),
                 PebbleSpawnerComponent::CreateDescriptor(),
-                ServerPlayerSpawner::CreateDescriptor(),
+                ServerPlayerSpawnerComponent::CreateDescriptor(),
                 ServerAuthPlayerComponent::CreateDescriptor(),
                 LocalClientComponent::CreateDescriptor(),
                 ServerPlayerControlsComponent::CreateDescriptor(),

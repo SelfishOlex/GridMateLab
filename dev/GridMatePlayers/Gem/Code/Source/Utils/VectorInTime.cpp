@@ -33,7 +33,7 @@ bool VectorInTime::Throttler::WithinThreshold(
     if (cur.m_time != m_baseline.m_time)
         return false;
 
-    const auto diff = m_baseline.m_vector - cur.m_vector;
+    const Vector3 diff = m_baseline.m_vector - cur.m_vector;
     return diff.GetLengthSq() < 0.1f;
 }
 

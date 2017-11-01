@@ -6,7 +6,7 @@
 #include <GridMate/Replica/RemoteProcedureCall.h>
 #include <GridMate/Replica/ReplicaFunctions.h>
 #include <GridMatePlayers/LocalClientBus.h>
-#include "AzCore/Component/TransformBus.h"
+#include <AzCore/Component/TransformBus.h>
 #include <LmbrCentral/Physics/PhysicsComponentBus.h>
 
 using namespace AZ;
@@ -19,12 +19,11 @@ class ServerAuthPlayerComponent::Chunk
 {
 public:
     GM_CLASS_ALLOCATOR(Chunk);
-
-    Chunk()
-        : m_owningPlayer("Owning Player")
-        , m_startingPosition("Starting Position")
-    {
-    }
+    explicit Chunk(
+        MemberIDCompact playerId = 0,
+        const Vector3& pos = Vector3::CreateZero())
+        : m_owningPlayer("Owning Player", playerId)
+        , m_startingPosition("Starting Position", pos) {}
 
     static const char* GetChunkName()
     {
@@ -33,12 +32,64 @@ public:
 
     bool IsReplicaMigratable() override { return true; }
 
-    DataSet<MemberIDCompact>::BindInterface<
-        ServerAuthPlayerComponent,
-        &ServerAuthPlayerComponent::OnOwningPlayerChanged>
-    m_owningPlayer;
-
+    DataSet<MemberIDCompact> m_owningPlayer;
     DataSet<Vector3> m_startingPosition;
+
+    class Desc : public GridMate::ReplicaChunkDescriptor
+    {
+    public:
+        Desc() : ReplicaChunkDescriptor(
+            Chunk::GetChunkName(), sizeof(Chunk)) {}
+
+        ReplicaChunkBase* CreateFromStream(
+            UnmarshalContext& mc) override
+        {
+            if (!mc.m_hasCtorData)
+            {
+                return CreateReplicaChunk<Chunk>();
+            }
+
+            Vector3 position;
+            mc.m_iBuf->Read(position);
+            MemberIDCompact playerId;
+            mc.m_iBuf->Read(playerId);
+
+            return CreateReplicaChunk<Chunk>(playerId, position);
+        }
+
+        void DiscardCtorStream(UnmarshalContext& mc) override
+        {
+            Vector3 position;
+            mc.m_iBuf->Read(position);
+            MemberIDCompact playerId;
+            mc.m_iBuf->Read(playerId);
+        }
+
+        void DeleteReplicaChunk(
+            ReplicaChunkBase* chunkInstance) override
+        {
+            delete chunkInstance;
+        }
+
+        void MarshalCtorData(ReplicaChunkBase* chunkInstance,
+            WriteBuffer& wb) override
+        {
+            if (Chunk* chunk = static_cast<Chunk*>(chunkInstance))
+            {
+                ServerAuthPlayerComponent* component =
+                    static_cast<ServerAuthPlayerComponent*>(
+                        chunk->GetHandler());
+
+                Vector3 position = Vector3::CreateZero();
+                EBUS_EVENT_ID_RESULT(position,
+                    component->GetEntityId(), TransformBus,
+                    GetWorldTranslation);
+
+                wb.Write(position);
+                wb.Write(chunk->m_owningPlayer.Get());
+            }
+        }
+    };
 };
 
 void ServerAuthPlayerComponent::Reflect(
@@ -49,7 +100,7 @@ void ServerAuthPlayerComponent::Reflect(
         sc->Class<ServerAuthPlayerComponent, Component>()
           ->Version(1);
 
-        if (auto ec = sc->GetEditContext())
+        if (EditContext* ec = sc->GetEditContext())
         {
             ec->Class<ServerAuthPlayerComponent>(
                   "Server Auth Player Body",
@@ -69,22 +120,15 @@ void ServerAuthPlayerComponent::Reflect(
     if (!descTable.FindReplicaChunkDescriptor(
         ReplicaChunkClassId(Chunk::GetChunkName())))
     {
-        descTable.RegisterChunkType<Chunk>();
+        descTable.RegisterChunkType<Chunk, Chunk::Desc>();
     }
 }
 
 void ServerAuthPlayerComponent::SetAssociatedPlayerId(
     const GridMate::MemberIDCompact& player)
 {
-    if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
-    {
-        auto t = Transform::CreateIdentity();
-        EBUS_EVENT_ID_RESULT(t, GetEntityId(), AZ::TransformBus,
-            GetWorldTM);
-        chunk->m_startingPosition.Set(t.GetTranslation());
-
+    if (Chunk* chunk = static_cast<Chunk*>(m_chunk.get()))
         chunk->m_owningPlayer.Set(player);
-    }
 }
 
 ReplicaChunkPtr ServerAuthPlayerComponent::GetNetworkBinding()
@@ -116,10 +160,18 @@ void ServerAuthPlayerComponent::Activate()
     {
         ServerPlayerBodyBus::Handler::BusConnect(GetEntityId());
     }
-    else
+    else if (Chunk* chunk = static_cast<Chunk*>(m_chunk.get()))
     {
-        m_readyToConnectToBody = true;
-        BroadcastNewBody();
+        const Vector3 pos = chunk->m_startingPosition.Get();
+        EBUS_EVENT_ID(GetEntityId(), TransformBus,
+            SetWorldTranslation, pos);
+
+        EBUS_EVENT_ID(GetEntityId(),
+            LmbrCentral::PhysicsComponentRequestBus,
+            EnablePhysics);
+
+        EBUS_EVENT(LocalClientBus, AttachToBody,
+            chunk->m_owningPlayer.Get(), GetEntityId());
     }
 }
 
@@ -128,38 +180,5 @@ void ServerAuthPlayerComponent::Deactivate()
     if (NetQuery::IsEntityAuthoritative(GetEntityId()))
     {
         ServerPlayerBodyBus::Handler::BusDisconnect();
-    }
-    else
-    {
-        m_readyToConnectToBody = false;
-    }
-}
-
-void ServerAuthPlayerComponent::OnOwningPlayerChanged(
-    const GridMate::MemberIDCompact& value,
-    const GridMate::TimeContext& tc)
-{
-    BroadcastNewBody();
-}
-
-void ServerAuthPlayerComponent::BroadcastNewBody()
-{
-    if (NetQuery::IsEntityAuthoritative(GetEntityId())) return;
-    if (!m_readyToConnectToBody) return;
-
-    if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
-    {
-        auto t = Transform::CreateTranslation(
-            chunk->m_startingPosition.Get());
-        EBUS_EVENT_ID(GetEntityId(), TransformBus,
-            SetWorldTM, t);
-
-        EBUS_EVENT_ID(GetEntityId(),
-            LmbrCentral::PhysicsComponentRequestBus,
-            EnablePhysics);
-
-        if (chunk->m_owningPlayer.Get() != 0)
-            EBUS_EVENT(LocalClientBus, AttachToBody,
-                chunk->m_owningPlayer.Get(), GetEntityId());
     }
 }
