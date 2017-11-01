@@ -5,9 +5,9 @@
 using namespace AZ;
 using namespace GridMatePlayers;
 
-MovementHistory::MovementHistory()
+MovementHistory::MovementHistory(u32 size)
 {
-    m_points.set_capacity(50);
+    m_points.set_capacity(size);
 }
 
 void MovementHistory::AddDataPoint(const Vector3& t, u32 time)
@@ -20,25 +20,25 @@ Vector3 MovementHistory::GetPositionAt(u32 time)
     if (m_points.size() == 0)
         return Vector3::CreateZero();
 
-    auto after = m_points[m_points.size() - 1];
-    auto before = m_points[0];
+    DataPoint* before = &m_points[0];
+    DataPoint* after = &m_points[m_points.size() - 1];
     for (auto it = m_points.rbegin(); it != m_points.rend(); ++it)
     {
         if (it->m_time <= time)
         {
-            before = *it;
+            before = &*it;
             break;
         }
 
-        after = *it;
+        after = &*it;
     }
 
-    auto bPos = before.m_position;
-    if (after.m_time != before.m_time)
+    Vector3 bPos = before->m_position;
+    if (after->m_time != before->m_time)
     {
-        const auto portion = (time - before.m_time) /
-            aznumeric_cast<float>(after.m_time - before.m_time);
-        return bPos.Lerp(after.m_position, portion);
+        const float portion = (time - before->m_time) /
+            aznumeric_cast<float>(after->m_time - before->m_time);
+        return bPos.Lerp(after->m_position, portion);
     }
 
     return bPos;

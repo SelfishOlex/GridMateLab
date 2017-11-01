@@ -61,6 +61,6 @@ namespace GridMatePlayers
         float m_speed = 0.f;
         float m_allowedDeviation = 0.1f;
 
-        MovementHistory m_history;
+        MovementHistory m_history{ 50 };
     };
 }
