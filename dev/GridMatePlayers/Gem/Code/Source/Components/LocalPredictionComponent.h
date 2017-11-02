@@ -50,7 +50,7 @@ namespace GridMatePlayers
             const GridMate::TimeContext &tc);
 
         AZ::Vector3 GetPosition() const;
-        AZ::u32 GetTime() const;
+        AZ::u32 GetLocalTime() const;
 
     private:
         class Chunk;
@@ -60,8 +60,7 @@ namespace GridMatePlayers
         bool m_movingForward = false;
         float m_speed = 0.f;
 
-        MovementHistory m_history;
-
         bool IsLocallyControlled() const;
+        MovementHistory m_history{ 50 };
     };
 }

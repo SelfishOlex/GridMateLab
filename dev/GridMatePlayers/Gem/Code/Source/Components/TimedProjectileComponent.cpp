@@ -22,7 +22,7 @@ void TimedProjectileComponent::Reflect(
                 &TimedProjectileComponent::m_maxLifetime)
             ->Version(1);
 
-        if (auto ec = sc->GetEditContext())
+        if (EditContext* ec = sc->GetEditContext())
         {
             ec->Class<TimedProjectileComponent>(
                 "Timed Projectile",

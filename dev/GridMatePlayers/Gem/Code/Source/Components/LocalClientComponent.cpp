@@ -21,7 +21,7 @@ void LocalClientComponent::Reflect(AZ::ReflectContext* context)
           ->Field("Camera Offset",
                   &LocalClientComponent::m_cameraOffset);
 
-        if (auto ec = sc->GetEditContext())
+        if (EditContext* ec = sc->GetEditContext())
         {
             ec->Class<LocalClientComponent>(
                   "Local Client",
@@ -43,29 +43,28 @@ void LocalClientComponent::Reflect(AZ::ReflectContext* context)
 
 void LocalClientComponent::Activate()
 {
-    if (!gEnv->IsDedicated())
-    {
-        LocalClientBus::Handler::BusConnect();
+#if !defined(DEDICATED_SERVER)
+    LocalClientBus::Handler::BusConnect();
 
-        if (gEnv && gEnv->pNetwork)
-        {
-            SessionEventBus::Handler::BusConnect(
-                gEnv->pNetwork->GetGridMate());
-        }
+    ISystem* system = nullptr;
+    EBUS_EVENT_RESULT(system, CrySystemRequestBus, GetCrySystem);
+    if (system)
+    {
+        SessionEventBus::Handler::BusConnect(
+            system->GetINetwork()->GetGridMate());
     }
+#endif
 }
 
 void LocalClientComponent::Deactivate()
 {
-    if (!gEnv->IsDedicated())
+#if !defined(DEDICATED_SERVER)
+    LocalClientBus::Handler::BusDisconnect();
+    if (SessionEventBus::Handler::BusIsConnected())
     {
-        LocalClientBus::Handler::BusDisconnect();
-
-        if (SessionEventBus::Handler::BusIsConnected())
-        {
-            SessionEventBus::Handler::BusDisconnect();
-        }
+        SessionEventBus::Handler::BusDisconnect();
     }
+#endif
 }
 
 void LocalClientComponent::AttachToBody(
@@ -74,7 +73,7 @@ void LocalClientComponent::AttachToBody(
 {
     if (m_selfId == 0 || m_selfId != playerId) return;
 
-    auto t = Transform::CreateTranslation(m_cameraOffset);
+    Transform t = Transform::CreateTranslation(m_cameraOffset);
     EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus,
         SetLocalTM, t);
 

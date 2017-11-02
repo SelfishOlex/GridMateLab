@@ -18,7 +18,7 @@ namespace GridMatePlayers
                 ->Field("Server Clock Delay",
                     &NetworkTimeSystemComponent::m_serverLag);
 
-            if (auto ec = s->GetEditContext())
+            if (EditContext* ec = s->GetEditContext())
             {
                 ec->Class<NetworkTimeSystemComponent>(
                     "Network Time",
@@ -41,7 +41,7 @@ namespace GridMatePlayers
     {
         if (!m_session) return 0;
 
-        const auto localTime = m_session->GetTime();
+        const AZ::u32 localTime = m_session->GetTime();
         if (m_session->IsHost())
             return AZStd::max(localTime - m_serverLag, 0u);
 

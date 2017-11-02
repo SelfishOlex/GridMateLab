@@ -39,12 +39,12 @@
             "Source/Components/LocalPredictionComponent.h",
             "Source/Components/PebbleSpawnerComponent.cpp",
             "Source/Components/PebbleSpawnerComponent.h",
+            "Source/Components/ServerPlayerSpawnerComponent.cpp",
+            "Source/Components/ServerPlayerSpawnerComponent.h",
             "Source/Components/ServerAuthPlayerComponent.cpp",
             "Source/Components/ServerAuthPlayerComponent.h",
             "Source/Components/ServerPlayerControlsComponent.cpp",
             "Source/Components/ServerPlayerControlsComponent.h",
-            "Source/Components/ServerPlayerSpawner.cpp",
-            "Source/Components/ServerPlayerSpawner.h",
             "Source/Components/TimedProjectileComponent.cpp",
             "Source/Components/TimedProjectileComponent.h"
         ]

@@ -34,6 +34,6 @@ namespace GridMatePlayers
     private:
         bool m_enabled = true;
         AZ::u32 m_delayForOthers = 500; // ms
-        MovementHistory m_history;
+        MovementHistory m_history{ 50 };
     };
 }

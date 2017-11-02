@@ -39,7 +39,7 @@ void LocalPredictionComponent::Reflect(ReflectContext* reflect)
         sc->Class<LocalPredictionComponent, Component>()
             ->Version(1);
 
-        if (auto ec = sc->GetEditContext())
+        if (EditContext* ec = sc->GetEditContext())
         {
             ec->Class<LocalPredictionComponent>(
                 "Local Prediction",
@@ -64,12 +64,11 @@ void LocalPredictionComponent::Reflect(ReflectContext* reflect)
 
 void LocalPredictionComponent::Activate()
 {
-    const auto self = GetEntityId();
+    const EntityId self = GetEntityId();
     LocalPredictionRequestBus::Handler::BusConnect(self);
-
     TransformNotificationBus::Handler::BusConnect(self);
 
-    if (!NetQuery::IsEntityAuthoritative(GetEntityId()))
+    if (!NetQuery::IsEntityAuthoritative(self))
         TickBus::Handler::BusConnect();
 
     m_isActive = true;
@@ -128,26 +127,25 @@ void LocalPredictionComponent::OnCharacterStop(u32 time)
 void LocalPredictionComponent::OnTransformChanged(
     const AZ::Transform&, const AZ::Transform& world)
 {
-    if (auto chunk = static_cast<Chunk*>(m_chunk.get()))
+    if (Chunk* chunk = static_cast<Chunk*>(m_chunk.get()))
     {
+        const Vector3 newLocal = world.GetTranslation();
         if (chunk->IsMaster())
         {
-            auto& pos = chunk->m_serverCheckpoint.Get().m_vector;
-            if (pos.GetDistance(world.GetTranslation()) > 0.01f)
-            {
-                AZ_Printf("Book", "server (-- %f --) @ %d",
-                    static_cast<float>(
-                        world.GetTranslation().GetY()),
-                    GetTime());
+            const float diff = newLocal.GetDistance(
+                chunk->m_serverCheckpoint.Get().m_vector);
+            if (diff < 0.01f) return;
 
-                chunk->m_serverCheckpoint.Set(
-                    { world.GetTranslation(), GetTime() });
-            }
+            AZ_Printf("Book", "server (-- %f --) @ %d",
+                static_cast<float>(newLocal.GetY()),
+                GetLocalTime());
+
+            chunk->m_serverCheckpoint.Set(
+                { newLocal, GetLocalTime() });
         }
         else if (IsLocallyControlled())
         {
-            m_history.AddDataPoint(world.GetTranslation(),
-                GetTime());
+            m_history.AddDataPoint(newLocal, GetLocalTime());
         }
     }
 }
@@ -167,12 +165,12 @@ void LocalPredictionComponent::OnTick(float deltaTime,
 Vector3 LocalPredictionComponent::GetPosition() const
 {
     Vector3 v = AZ::Vector3::CreateZero();
-    EBUS_EVENT_ID_RESULT(v, GetEntityId(), TransformBus,
+    EBUS_EVENT_ID_RESULT(v, GetEntityId(), AZ::TransformBus,
         GetWorldTranslation);
     return v;
 }
 
-AZ::u32 LocalPredictionComponent::GetTime() const
+AZ::u32 LocalPredictionComponent::GetLocalTime() const
 {
     AZ::u32 t = 0;
     EBUS_EVENT_RESULT(t, NetworkTimeRequestBus, GetLocalTime);
@@ -194,7 +192,7 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
         !NetQuery::IsEntityAuthoritative(GetEntityId()))
     {
         const Vector3& serverPos = value.m_vector;
-        const float serverTime = value.m_time;
+        const AZ::u32 serverTime = value.m_time;
 
         if (IsLocallyControlled())
         {
@@ -204,7 +202,7 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
                     m_history.GetPositionAt(serverTime);
                 const float diff = backThen.GetDistance(serverPos);
                 const float allowedDeviation =
-                    (GetTime() - serverTime) * 0.001f *
+                    (GetLocalTime() - serverTime) * 0.001f *
                     AZStd::GetMax(m_speed, .5f);
 
                 if (diff > allowedDeviation)
@@ -218,7 +216,7 @@ void LocalPredictionComponent::OnNewServerCheckpoint(
                     AZ_Printf("Book", "new (-- %f --) @%d; dy %f,"
                         " dev %f, speed %f",
                         static_cast<float>(serverPos.GetY()),
-                        GetTime(),
+                        GetLocalTime(),
                         diff,
                         allowedDeviation, m_speed);
                 }
