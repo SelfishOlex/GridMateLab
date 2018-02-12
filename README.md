@@ -1,6 +1,9 @@
 # GridMate Book
 
 This repository contains the source code accompanying the book "Multiplayer Programming in Amazon Lumberyard".
+
+The book is avaliable through amazon.com : http://a.co/dMraem4
+
 Keep in mind that this is a fork of Amazon Lumberyard repository. See the details below for its license.
 
 
